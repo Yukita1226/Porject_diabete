@@ -1,0 +1,7 @@
+numpy
+pandas
+onnx
+onnxruntime
+
+
+ # run pip install -r requirements.txt

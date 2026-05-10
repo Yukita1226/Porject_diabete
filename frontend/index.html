@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Perceptron Test</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="card">
+    <h1>Perceptron Test</h1>
+    <p class="hint">Rule: <code>output = 1</code> if <code>x &gt; y</code>, otherwise <code>0</code>.</p>
+
+    <form id="predict-form" autocomplete="off">
+      <label>
+        <span>Input 1 (x)</span>
+        <input type="number" id="input1" step="any" placeholder="e.g. 2.5" required />
+      </label>
+
+      <label>
+        <span>Input 2 (y)</span>
+        <input type="number" id="input2" step="any" placeholder="e.g. 0.8" required />
+      </label>
+
+      <button type="submit" id="send-btn">Send</button>
+    </form>
+
+    <section class="output" aria-live="polite">
+      <h2>Output</h2>
+      <pre id="output">Waiting for input...</pre>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

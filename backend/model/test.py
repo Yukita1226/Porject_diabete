@@ -1,6 +1,7 @@
 import pandas as pd
 
-class Parameter:
+
+class Parameter: #
     
     def __init__(self,input = None,output = None,weight = None,lr = None,bia = None):
 
@@ -11,12 +12,13 @@ class Parameter:
         self.bia = bia       #learning rate
 
 
-def prepare() -> Parameter:
+def prepare(name : str) -> Parameter:
 
+    d = pd.read_csv(name, header=None)
     p  = Parameter()
 
-    p.input = [[0,0],[0,1],[1,0],[1,1]]
-    p.output = [0,0,0,1]
+    p.input = d.iloc[:, :2].values.tolist()
+    p.output = d.iloc[:, 2].values.tolist()
     p.weight  = [0.5,0,5]
     p.lr = 0.02
     p.bia =0
@@ -59,8 +61,27 @@ def calculated(input : list,p : Parameter) -> int:
 
 if __name__ == "__main__":
 
-    p = prepare()
+    p = prepare("data.csv")
     train(p, epoch=20)
 
-    for xs in p.input:
-        print(xs, "->", calculated(xs, p))
+    total_true = 0
+    total_false = 0
+
+    for i in range(len(p.input)):
+        predicted = calculated(p.input[i], p)
+        actual = p.output[i]
+
+        if predicted == actual:
+            result = True
+            total_true += 1
+        else:
+            result = False
+            total_false += 1
+
+        print(p.input[i], "->", predicted, "| expected:", actual, "|", result)
+
+    accuracy = total_true / len(p.input) * 100
+    print()
+    print("Total true :", total_true)
+    print("Total false:", total_false)
+    print(f"Accuracy   : {accuracy:.2f}%")

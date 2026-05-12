@@ -1,5 +1,5 @@
 import pandas as pd
-
+import math
 
 class Parameter: #
     
@@ -18,6 +18,11 @@ class Parameter: #
         self.weight             = weight
         self.lr                 = lr
         self.bia                = bia
+
+def sigmoid(z):
+    if z < -500: return 0.0
+    if z > 500:  return 1.0
+    return 1.0 / (1.0 + math.exp(-z))
 
 def prepare(name : str) -> Parameter:
 
@@ -60,7 +65,7 @@ def prepare(name : str) -> Parameter:
     tem  = d.iloc[1:, 2].values.tolist()
     for x in tem:
         if int(x) == 0 or int(x) == 1:
-            p.hypertension.append(x)
+            p.hypertension.append(int(x))
         else:
             print(f'found hypertrension error at index {l} value : {x}')
             pass
@@ -72,7 +77,7 @@ def prepare(name : str) -> Parameter:
     tem  = d.iloc[1:, 3].values.tolist()
     for x in tem:
         if int(x) == 0 or int(x) == 1:
-            p.heart_disease.append(x)
+            p.heart_disease.append(int(x))
         else:
             print(f'found heart_disease error at index {l} value : {x}')
             pass
@@ -144,7 +149,7 @@ def prepare(name : str) -> Parameter:
     tem  = d.iloc[1:, 8].values.tolist()
     for x in tem:
         if int(x) == 0 or int(x) == 1:
-            p.diabetes.append(x)
+            p.diabetes.append(int(x))
         else:
             print(f'found dia error at index {l} value : {x}')
             pass
@@ -165,11 +170,102 @@ def prepare(name : str) -> Parameter:
  
     return p
 
+def train(p: Parameter, epoch: int) -> None:
+
+    for e in range(epoch):
+        total_loss = 0.0
+
+        for y in range(len(p.diabetes)):
+            x = [
+                p.gender[y],
+                p.age[y],
+                p.hypertension[y],
+                p.heart_disease[y],
+                p.smoking_history[y],
+                p.bmi[y],
+                p.hbA1c_level[y],
+                p.blood_glucose_level[y]
+            ]
+
+            z = 0
+            for i in range(8):
+                z += x[i] * p.weight[i]
+            z += p.bia
+            y_hat = sigmoid(z)
+
+            error = p.diabetes[y] - y_hat
+            total_loss += 0.5 * error * error
 
 
+            for i in range(8):
+                p.weight[i] += p.lr * error * x[i]
+            p.bia += p.lr * error
+
+        print(f"Epoch {e+1}: loss = {total_loss / len(p.diabetes):.4f}")
+
+def calculate(p: Parameter) -> None:
+
+    print("\n" + "=" * 40)
+    print("  Diabetes prediction")
+    print("=" * 40)
+
+    gender_str = input("gender (Male / Female / Other): ").strip()
+    if gender_str == "Male":
+        gender = 2
+    elif gender_str == "Other":
+        gender = 1
+    elif gender_str == "Female":
+        gender = 0
+    else:
+        print("invalid gender, defaulting to Female (0)")
+        gender = 0
+
+    age                 = float(input("age                 : "))
+    hypertension        = int(input("hypertension (0/1)  : "))
+    heart_disease       = int(input("heart_disease (0/1) : "))
+
+    smoke_str = input("smoking (No Info/never/former/not current/current/ever): ").strip()
+    smoke_map = {"No Info": -1, "never": 1, "former": 2,
+                 "not current": 4, "current": 4, "ever": 5}
+    smoking_history = smoke_map.get(smoke_str, -1)
+    if smoke_str not in smoke_map:
+        print("invalid smoking, defaulting to No Info (-1)")
+
+    bmi                 = float(input("bmi                 : "))
+    hbA1c_level         = float(input("hbA1c_level         : "))
+    blood_glucose_level = int(input("blood_glucose_level : "))
+
+    # pack inputs
+    x = [gender, age, hypertension, heart_disease,
+         smoking_history, bmi, hbA1c_level, blood_glucose_level]
+
+    # forward pass
+    z = 0
+    for i in range(8):
+        z += x[i] * p.weight[i]
+    z += p.bia
+    y_hat = sigmoid(z)
+
+    answer = 1 if y_hat >= 0.5 else 0
+
+    print("-" * 40)
+    print(f"raw z       : {z:.4f}")
+    print(f"probability : {y_hat:.4f}")
+    print(f"prediction  : {answer}  ({'diabetes' if answer == 1 else 'no diabetes'})")
+    print("=" * 40 + "\n")
 
 if __name__ == "__main__":
     print("ok")
+
     p = prepare("diabetes_prediction_dataset.csv")
-    print(p.diabetes)
-    print(f'total = {len(p.hypertension)}')
+    train(p,100)
+
+    while True:
+        calculate(p)
+        again = input("test another? (y/n): ").strip().lower()
+        if again != "y":
+            break
+
+
+
+

@@ -254,6 +254,7 @@ def calculate(p: Parameter) -> None:
     print(f"prediction  : {answer}  ({'diabetes' if answer == 1 else 'no diabetes'})")
     print("=" * 40 + "\n")
 
+
 if __name__ == "__main__":
     print("ok")
 

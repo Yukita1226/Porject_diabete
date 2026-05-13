@@ -1,5 +1,6 @@
 import pandas as pd
 import math
+import random
 
 
 def sigmoid(z: float) -> float:
@@ -61,20 +62,31 @@ class Parameter:
         self.bia                = 0.0
 
 
-def accuracy(p: Parameter) -> None:
-
+def split_data(p: Parameter, test_ratio: float = 0.2):
     n = len(p.genomic_risk)
+    indices = list(range(n))
+    random.seed(42)
+    random.shuffle(indices)
+
+    test_size = int(n * test_ratio)
+    test_idx  = indices[:test_size]
+    train_idx = indices[test_size:]
+
+    print(f"Total: {n}  →  Train: {len(train_idx)}  Test: {len(test_idx)}")
+    return train_idx, test_idx
+
+
+def accuracy(p: Parameter, indices: list, label: str = "") -> None:
+
+    n = len(indices)
     correct = 0
-    tp = tn = fp = fn = 0      # confusion matrix counts
+    tp = tn = fp = fn = 0
 
-    # for R²
-    ss_res = 0.0    # sum of squared residuals (y_true - y_hat)²
-    ss_tot = 0.0    # total sum of squares (y_true - mean)²
+    ss_res = 0.0
+    ss_tot = 0.0
+    mean_y = sum(p.genomic_risk[i] for i in indices) / n
 
-    # mean of targets (for R²)
-    mean_y = sum(p.genomic_risk) / n
-
-    for y in range(n):
+    for y in indices:
         xs = [
             p.genotype_SLC30A8[y], p.genotype_PAM[y], p.genotype_MC4R[y], p.genotype_WIPI1[y],
             p.genotype_SOCS2[y], p.genotype_HNF1A[y], p.genotype_GLP1R[y], p.genotype_DYNC2H1[y],
@@ -94,17 +106,15 @@ def accuracy(p: Parameter) -> None:
         z += p.bia
         y_hat = sigmoid(z)
 
-        pred = 1 if y_hat >= 0.5 else 0
+        pred  = 1 if y_hat >= 0.5 else 0
         truth = p.genomic_risk[y]
 
-        if pred == truth:
-            correct += 1
+        if pred == truth: correct += 1
         if pred == 1 and truth == 1: tp += 1
         if pred == 0 and truth == 0: tn += 1
         if pred == 1 and truth == 0: fp += 1
         if pred == 0 and truth == 1: fn += 1
 
-        # R² accumulators
         ss_res += (truth - y_hat) ** 2
         ss_tot += (truth - mean_y) ** 2
 
@@ -112,23 +122,18 @@ def accuracy(p: Parameter) -> None:
     r2  = 1 - (ss_res / ss_tot) if ss_tot > 0 else 0.0
 
     print("\n" + "=" * 50)
-    print("  Model evaluation")
+    print(f"  Accuracy on {label} set")
     print("=" * 50)
     print(f"total samples       : {n}")
     print(f"correct predictions : {correct}")
     print(f"accuracy            : {acc*100:.2f}%")
     print(f"R²                  : {r2:.4f}")
     print("-" * 50)
-    print(f"true positives  (TP): {tp}")
-    print(f"true negatives  (TN): {tn}")
-    print(f"false positives (FP): {fp}")
-    print(f"false negatives (FN): {fn}")
-    if (tp + fp) > 0:
-        print(f"precision           : {tp/(tp+fp):.4f}")
-    if (tp + fn) > 0:
-        print(f"recall (sensitivity): {tp/(tp+fn):.4f}")
+    print(f"TP: {tp:5d}   FN: {fn:5d}")
+    print(f"FP: {fp:5d}   TN: {tn:5d}")
+    if (tp + fp) > 0: print(f"precision           : {tp/(tp+fp):.4f}")
+    if (tp + fn) > 0: print(f"recall (sensitivity): {tp/(tp+fn):.4f}")
     print("=" * 50 + "\n")
-
 
 def prepare(name: str) -> Parameter:
 
@@ -328,11 +333,14 @@ def calculate(p: Parameter) -> None:
 
 
 if __name__ == "__main__":
-    print("ok")
-
     p = prepare("synthetic_genomic_unpaired.csv")
-    train(p,100)
-    accuracy(p)
+
+    train_idx, test_idx = split_data(p, test_ratio=0.2)
+
+    train(p, 100)
+
+    accuracy(p, train_idx, "TRAIN")
+    accuracy(p, test_idx,  "TEST")
 
     while True:
         calculate(p)

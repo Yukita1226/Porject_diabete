@@ -41,3 +41,13 @@ func main() {
 	r.POST("/predict", pc.Predict)
 	r.Run(":8080")
 }
+
+
+
+
+
+
+
+input1 = xxx
+input xxx
+output 1

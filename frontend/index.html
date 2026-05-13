@@ -3,33 +3,150 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Perceptron Test</title>
+  <title>Diabetes Risk Assessment</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <main class="card">
-    <h1>Perceptron Test</h1>
-    <p class="hint">Rule: <code>output = 1</code> if <code>x &gt; y</code>, otherwise <code>0</code>.</p>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Clinical + genomic model</p>
+        <h1>Diabetes Risk Assessment</h1>
+      </div>
+      <div class="api-pill" id="api-pill">localhost:8080</div>
+    </header>
 
-    <form id="predict-form" autocomplete="off">
-      <label>
-        <span>Input 1 (x)</span>
-        <input type="number" id="input1" step="any" placeholder="e.g. 2.5" required />
-      </label>
+    <main class="workspace">
+      <section class="form-panel" aria-label="Assessment form">
+        <form id="prediction-form" autocomplete="off">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Step 1</p>
+              <h2>Clinical Data</h2>
+            </div>
+            <button class="ghost-btn" type="button" id="sample-btn">Sample</button>
+          </div>
 
-      <label>
-        <span>Input 2 (y)</span>
-        <input type="number" id="input2" step="any" placeholder="e.g. 0.8" required />
-      </label>
+          <div class="dataset-panel">
+            <label class="dataset-select" for="clinical-row">
+              <span class="field-label">NHANES CSV Row</span>
+              <select id="clinical-row" disabled>
+                <option value="">Loading clinical data...</option>
+              </select>
+            </label>
+            <div class="dataset-meta">
+              <span id="dataset-status">Loading dataset</span>
+              <strong id="dataset-label">Actual: --</strong>
+            </div>
+          </div>
 
-      <button type="submit" id="send-btn">Send</button>
-    </form>
+          <div class="field-grid" id="clinical-fields"></div>
 
-    <section class="output" aria-live="polite">
-      <h2>Output</h2>
-      <pre id="output">Waiting for input...</pre>
-    </section>
-  </main>
+          <div class="panel-head genomic-head">
+            <div>
+              <p class="eyebrow">Step 2</p>
+              <h2>Genomic Data</h2>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="include-genomic" />
+              <span class="toggle-track" aria-hidden="true"></span>
+              <span>Include</span>
+            </label>
+          </div>
+
+          <div class="genomic-panel" id="genomic-panel" hidden>
+            <div class="dataset-panel genomic-dataset">
+              <label class="dataset-select" for="genomic-row">
+                <span class="field-label">Synthetic Genomic CSV Row</span>
+                <select id="genomic-row" disabled>
+                  <option value="">Loading genomic data...</option>
+                </select>
+              </label>
+              <div class="dataset-meta">
+                <span id="genomic-dataset-status">Loading dataset</span>
+                <strong id="genomic-dataset-label">Actual: --</strong>
+              </div>
+            </div>
+            <div class="gene-toolbar">
+              <button class="chip-btn" type="button" data-fill-genotype="0">All 0</button>
+              <button class="chip-btn" type="button" data-fill-genotype="1">All 1</button>
+              <button class="chip-btn" type="button" data-fill-genotype="2">All 2</button>
+            </div>
+            <div class="gene-grid" id="genomic-fields"></div>
+          </div>
+
+          <div class="actions">
+            <button class="secondary-btn" type="button" id="reset-btn">Reset</button>
+            <button class="primary-btn" type="submit" id="submit-btn">Run Assessment</button>
+          </div>
+        </form>
+      </section>
+
+      <aside class="result-panel" aria-label="Assessment result">
+        <section class="result-card" aria-live="polite">
+          <div class="result-top">
+            <div>
+              <p class="eyebrow">Result</p>
+              <h2 id="result-title">Ready</h2>
+            </div>
+            <span class="status-dot neutral" id="status-dot"></span>
+          </div>
+
+          <div class="risk-score">
+            <span id="risk-percent">--</span>
+            <small id="risk-label">Awaiting assessment</small>
+          </div>
+
+          <div class="metric-list">
+            <div class="metric-row">
+              <div class="metric-copy">
+                <strong>Clinical</strong>
+                <span id="clinical-value">--</span>
+              </div>
+              <div class="meter"><span id="clinical-meter"></span></div>
+            </div>
+            <div class="metric-row" id="genomic-metric" hidden>
+              <div class="metric-copy">
+                <strong>Genomic</strong>
+                <span id="genomic-value">--</span>
+              </div>
+              <div class="meter"><span id="genomic-meter"></span></div>
+            </div>
+            <div class="metric-row" id="mother-metric" hidden>
+              <div class="metric-copy">
+                <strong>Final</strong>
+                <span id="mother-value">--</span>
+              </div>
+              <div class="meter"><span id="mother-meter"></span></div>
+            </div>
+          </div>
+
+          <dl class="summary-list">
+            <div>
+              <dt>Mode</dt>
+              <dd id="mode-value">--</dd>
+            </div>
+            <div>
+              <dt>Clinical label</dt>
+              <dd id="clinical-label">--</dd>
+            </div>
+            <div>
+              <dt>Final label</dt>
+              <dd id="final-label">--</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="request-card">
+          <div class="request-head">
+            <p class="eyebrow">Request</p>
+            <button class="ghost-btn compact" type="button" id="copy-json-btn">Copy JSON</button>
+          </div>
+          <pre id="payload-preview">{}</pre>
+        </section>
+      </aside>
+    </main>
+  </div>
 
   <script src="script.js"></script>
 </body>

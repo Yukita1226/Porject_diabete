@@ -1,54 +1,619 @@
-const API_URL = "http://localhost:8080/predict";
+const DEFAULT_API_URL = "http://localhost:8080/predict";
+const DEFAULT_CLINICAL_DATA_URL = "/clinical-data.csv";
+const DEFAULT_GENOMIC_DATA_URL = "/genomic-data.csv";
+const GENOMIC_ROW_LIMIT = 1000;
+const queryApi = new URLSearchParams(window.location.search).get("api");
+const API_URL = queryApi || DEFAULT_API_URL;
 
-const form    = document.getElementById("predict-form");
-const input1  = document.getElementById("input1");
-const input2  = document.getElementById("input2");
-const sendBtn = document.getElementById("send-btn");
-const output  = document.getElementById("output");
+const clinicalFields = [
+  {
+    name: "sex",
+    label: "Sex",
+    kind: "select",
+    options: [
+      { value: 1, label: "Male" },
+      { value: 2, label: "Female" },
+    ],
+    sample: 1,
+  },
+  { name: "age", label: "Age", suffix: "years", min: 0, max: 120, sample: 52 },
+  {
+    name: "race",
+    label: "Race",
+    kind: "select",
+    options: [
+      { value: 1, label: "Mexican American" },
+      { value: 2, label: "Other Hispanic" },
+      { value: 3, label: "Non-Hispanic White" },
+      { value: 4, label: "Non-Hispanic Black" },
+      { value: 6, label: "Non-Hispanic Asian" },
+      { value: 7, label: "Other Race" },
+    ],
+    sample: 3,
+  },
+  { name: "bmi", label: "BMI", min: 10, max: 80, step: 0.1, sample: 31.4 },
+  { name: "waist_cm", label: "Waist", suffix: "cm", min: 30, max: 220, step: 0.1, sample: 104 },
+  { name: "systolic_bp", label: "Systolic BP", suffix: "mmHg", min: 60, max: 260, sample: 136 },
+  { name: "diastolic_bp", label: "Diastolic BP", suffix: "mmHg", min: 30, max: 160, sample: 84 },
+  { name: "hba1c", label: "HbA1c", suffix: "%", min: 3, max: 18, step: 0.1, sample: 6.4 },
+  { name: "glucose_fasting", label: "Fasting Glucose", suffix: "mg/dL", min: 40, max: 400, sample: 128 },
+  { name: "total_cholesterol", label: "Total Cholesterol", suffix: "mg/dL", min: 60, max: 450, sample: 206 },
+  { name: "hdl_cholesterol", label: "HDL Cholesterol", suffix: "mg/dL", min: 10, max: 180, sample: 46 },
+];
 
-function setOutput(text, kind) {
-  output.textContent = text;
-  output.classList.remove("success", "error");
-  if (kind) output.classList.add(kind);
+const genomicFields = [
+  "genotype_SLC30A8",
+  "genotype_PAM",
+  "genotype_MC4R",
+  "genotype_WIPI1",
+  "genotype_SOCS2",
+  "genotype_HNF1A",
+  "genotype_GLP1R",
+  "genotype_DYNC2H1",
+  "genotype_TM6SF2",
+  "genotype_CDKN1B",
+  "genotype_JMJD1C",
+  "genotype_SSTR5",
+  "genotype_ZHX3",
+  "genotype_TPCN2",
+  "genotype_ASCC2",
+  "genotype_PAX4",
+  "genotype_PLXND1",
+  "genotype_MACF1",
+  "genotype_POC5",
+  "genotype_PRIM1",
+  "genotype_SOS2",
+  "genotype_CCDC92",
+  "genotype_SETD9",
+  "genotype_GCKR",
+  "genotype_NYNRIN",
+  "genotype_APOE",
+  "genotype_ANGPTL4",
+  "genotype_KIAA1755",
+  "genotype_KCNJ11",
+  "genotype_PNPLA3",
+  "genotype_SLC16A11",
+  "genotype_SPRED2",
+  "genotype_BDNF",
+  "genotype_CPNE4",
+  "genotype_MAFA",
+  "genotype_CHRDL1",
+  "genotype_TSHZ3",
+];
+
+const form = document.getElementById("prediction-form");
+const clinicalRoot = document.getElementById("clinical-fields");
+const genomicRoot = document.getElementById("genomic-fields");
+const genomicPanel = document.getElementById("genomic-panel");
+const includeGenomic = document.getElementById("include-genomic");
+const submitBtn = document.getElementById("submit-btn");
+const sampleBtn = document.getElementById("sample-btn");
+const resetBtn = document.getElementById("reset-btn");
+const copyJsonBtn = document.getElementById("copy-json-btn");
+const payloadPreview = document.getElementById("payload-preview");
+const apiPill = document.getElementById("api-pill");
+const clinicalRowSelect = document.getElementById("clinical-row");
+const datasetStatus = document.getElementById("dataset-status");
+const datasetLabel = document.getElementById("dataset-label");
+const genomicRowSelect = document.getElementById("genomic-row");
+const genomicDatasetStatus = document.getElementById("genomic-dataset-status");
+const genomicDatasetLabel = document.getElementById("genomic-dataset-label");
+
+const resultTitle = document.getElementById("result-title");
+const statusDot = document.getElementById("status-dot");
+const riskPercent = document.getElementById("risk-percent");
+const riskLabel = document.getElementById("risk-label");
+const clinicalValue = document.getElementById("clinical-value");
+const clinicalMeter = document.getElementById("clinical-meter");
+const genomicMetric = document.getElementById("genomic-metric");
+const genomicValue = document.getElementById("genomic-value");
+const genomicMeter = document.getElementById("genomic-meter");
+const motherMetric = document.getElementById("mother-metric");
+const motherValue = document.getElementById("mother-value");
+const motherMeter = document.getElementById("mother-meter");
+const modeValue = document.getElementById("mode-value");
+const clinicalLabel = document.getElementById("clinical-label");
+const finalLabel = document.getElementById("final-label");
+
+let clinicalRows = [];
+let genomicRows = [];
+
+function prettyGeneName(name) {
+  return name.replace("genotype_", "");
 }
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
+function createField(field) {
+  const label = document.createElement("label");
+  label.className = "field";
+  label.htmlFor = field.name;
 
-  const x = parseFloat(input1.value);
-  const y = parseFloat(input2.value);
+  const labelText = document.createElement("span");
+  labelText.className = "field-label";
+  labelText.textContent = field.label;
+  label.appendChild(labelText);
 
-  if (Number.isNaN(x) || Number.isNaN(y)) {
-    setOutput("Please enter valid numbers in both fields.", "error");
+  if (field.kind === "select") {
+    const select = document.createElement("select");
+    select.id = field.name;
+    select.name = field.name;
+    select.required = true;
+
+    field.options.forEach((option) => {
+      const item = document.createElement("option");
+      item.value = option.value;
+      item.textContent = option.label;
+      select.appendChild(item);
+    });
+
+    label.appendChild(select);
+    return label;
+  }
+
+  const wrap = document.createElement("span");
+  wrap.className = "input-wrap";
+
+  const input = document.createElement("input");
+  input.id = field.name;
+  input.name = field.name;
+  input.type = "number";
+  input.step = field.step || "any";
+  input.required = true;
+  if (field.min !== undefined) input.min = field.min;
+  if (field.max !== undefined) input.max = field.max;
+
+  wrap.appendChild(input);
+
+  if (field.suffix) {
+    const suffix = document.createElement("span");
+    suffix.className = "suffix";
+    suffix.textContent = field.suffix;
+    wrap.appendChild(suffix);
+  }
+
+  label.appendChild(wrap);
+  return label;
+}
+
+function createGeneField(name) {
+  const label = document.createElement("label");
+  label.className = "gene-field";
+  label.htmlFor = name;
+
+  const labelText = document.createElement("span");
+  labelText.textContent = prettyGeneName(name);
+
+  const input = document.createElement("input");
+  input.id = name;
+  input.name = name;
+  input.type = "number";
+  input.inputMode = "numeric";
+  input.min = "0";
+  input.max = "2";
+  input.step = "1";
+  input.value = "0";
+
+  label.append(labelText, input);
+  return label;
+}
+
+function renderFields() {
+  clinicalRoot.replaceChildren(...clinicalFields.map(createField));
+  genomicRoot.replaceChildren(...genomicFields.map(createGeneField));
+  loadSample();
+}
+
+function parseCsv(text, limit = Infinity) {
+  const lines = text.trim().split(/\r?\n/);
+  const headers = lines.shift().split(",");
+  const selectedLines = lines.slice(0, limit);
+
+  return {
+    rows: selectedLines
+    .filter(Boolean)
+    .map((line) => {
+      const values = line.split(",");
+      return headers.reduce((row, header, index) => {
+        row[header] = values[index];
+        return row;
+      }, {});
+    }),
+    totalRows: lines.filter(Boolean).length,
+  };
+}
+
+function getActualLabel(row) {
+  if (!row || row.diabetes === undefined) return "Actual: --";
+  return row.diabetes === "1" ? "Actual: Diabetes" : "Actual: No diabetes";
+}
+
+function getGenomicActualLabel(row) {
+  if (!row || row.genomic_risk === undefined) return "Actual: --";
+  return row.genomic_risk === "1" ? "Actual: High genomic risk" : "Actual: Low genomic risk";
+}
+
+function setClinicalRow(row) {
+  if (!row) return;
+
+  clinicalFields.forEach((field) => {
+    const element = form.elements[field.name];
+    if (element && row[field.name] !== undefined) {
+      element.value = Number(row[field.name]);
+    }
+  });
+
+  datasetLabel.textContent = getActualLabel(row);
+  setEmptyResult();
+  updatePayloadPreview();
+}
+
+function setGenomicRow(row) {
+  if (!row) return;
+
+  genomicFields.forEach((name) => {
+    const element = form.elements[name];
+    if (element && row[name] !== undefined) {
+      element.value = Number(row[name]);
+    }
+  });
+
+  const prsText =
+    row.prs_normalized === undefined
+      ? ""
+      : ` | PRS ${Number(row.prs_normalized).toFixed(3)}`;
+  genomicDatasetLabel.textContent = `${getGenomicActualLabel(row)}${prsText}`;
+  setEmptyResult();
+  updatePayloadPreview();
+}
+
+function renderClinicalRows(rows) {
+  clinicalRowSelect.replaceChildren();
+
+  rows.slice(0, 500).forEach((row, index) => {
+    const option = document.createElement("option");
+    option.value = String(index);
+    option.textContent = `#${row.participant_id} | age ${Number(row.age)} | ${getActualLabel(row).replace("Actual: ", "")}`;
+    clinicalRowSelect.appendChild(option);
+  });
+
+  clinicalRowSelect.disabled = rows.length === 0;
+  datasetStatus.textContent = rows.length
+    ? `${rows.length.toLocaleString()} rows loaded`
+    : "No rows found";
+
+  if (rows.length) {
+    clinicalRowSelect.value = "0";
+    setClinicalRow(rows[0]);
+  }
+}
+
+function renderGenomicRows(rows, totalRows) {
+  genomicRowSelect.replaceChildren();
+
+  rows.forEach((row, index) => {
+    const option = document.createElement("option");
+    const riskLabel = getGenomicActualLabel(row).replace("Actual: ", "");
+    const prs = Number(row.prs_normalized).toFixed(3);
+    option.value = String(index);
+    option.textContent = `Row ${index + 1} | ${riskLabel} | PRS ${prs}`;
+    genomicRowSelect.appendChild(option);
+  });
+
+  genomicRowSelect.disabled = rows.length === 0;
+  genomicDatasetStatus.textContent = rows.length
+    ? `${rows.length.toLocaleString()} of ${totalRows.toLocaleString()} rows loaded`
+    : "No rows found";
+
+  if (rows.length) {
+    genomicRowSelect.value = "0";
+    setGenomicRow(rows[0]);
+  }
+}
+
+async function loadClinicalData() {
+  try {
+    const response = await fetch(DEFAULT_CLINICAL_DATA_URL);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    clinicalRows = parseCsv(await response.text()).rows;
+    renderClinicalRows(clinicalRows);
+  } catch (error) {
+    clinicalRowSelect.replaceChildren(new Option("CSV unavailable", ""));
+    clinicalRowSelect.disabled = true;
+    datasetStatus.textContent = `Dataset unavailable: ${error.message}`;
+    datasetLabel.textContent = "Actual: --";
+  }
+}
+
+async function loadGenomicData() {
+  try {
+    const response = await fetch(DEFAULT_GENOMIC_DATA_URL);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const parsed = parseCsv(await response.text(), GENOMIC_ROW_LIMIT);
+    genomicRows = parsed.rows;
+    renderGenomicRows(genomicRows, parsed.totalRows);
+  } catch (error) {
+    genomicRowSelect.replaceChildren(new Option("CSV unavailable", ""));
+    genomicRowSelect.disabled = true;
+    genomicDatasetStatus.textContent = `Dataset unavailable: ${error.message}`;
+    genomicDatasetLabel.textContent = "Actual: --";
+  }
+}
+
+function readNumber(name) {
+  const element = form.elements[name];
+  if (!element || element.value.trim() === "") {
+    throw new Error(`${name} is required`);
+  }
+  const value = Number(element.value);
+  if (Number.isNaN(value)) {
+    throw new Error(`${name} is required`);
+  }
+  return value;
+}
+
+function readInteger(name) {
+  const value = readNumber(name);
+  if (!Number.isInteger(value) || value < 0 || value > 2) {
+    throw new Error(`${prettyGeneName(name)} must be 0, 1, or 2`);
+  }
+  return value;
+}
+
+function buildPayload() {
+  const clinical = {};
+  clinicalFields.forEach((field) => {
+    clinical[field.name] = readNumber(field.name);
+  });
+
+  const payload = { clinical };
+
+  if (includeGenomic.checked) {
+    const genomic = {};
+    genomicFields.forEach((name) => {
+      genomic[name] = readInteger(name);
+    });
+    payload.genomic = genomic;
+  }
+
+  return payload;
+}
+
+function updatePayloadPreview() {
+  try {
+    payloadPreview.textContent = JSON.stringify(buildPayload(), null, 2);
+  } catch (error) {
+    payloadPreview.textContent = JSON.stringify({ error: error.message }, null, 2);
+  }
+}
+
+function loadSample() {
+  clinicalRowSelect.value = "";
+  datasetLabel.textContent = "Actual: --";
+  genomicRowSelect.value = "";
+  genomicDatasetLabel.textContent = "Actual: --";
+
+  clinicalFields.forEach((field) => {
+    const element = form.elements[field.name];
+    if (element) element.value = field.sample;
+  });
+
+  genomicFields.forEach((name, index) => {
+    const element = form.elements[name];
+    if (element) element.value = index % 5 === 0 ? 1 : 0;
+  });
+
+  updatePayloadPreview();
+}
+
+function resetForm() {
+  clinicalRowSelect.value = "";
+  datasetLabel.textContent = "Actual: --";
+  genomicRowSelect.value = "";
+  genomicDatasetLabel.textContent = "Actual: --";
+
+  clinicalFields.forEach((field) => {
+    const element = form.elements[field.name];
+    if (element) element.value = "";
+  });
+
+  genomicFields.forEach((name) => {
+    const element = form.elements[name];
+    if (element) element.value = "0";
+  });
+
+  includeGenomic.checked = false;
+  genomicPanel.hidden = true;
+  setEmptyResult();
+  updatePayloadPreview();
+}
+
+function setGenotypeValues(value) {
+  genomicRowSelect.value = "";
+  genomicDatasetLabel.textContent = "Actual: --";
+
+  genomicFields.forEach((name) => {
+    form.elements[name].value = String(value);
+  });
+  updatePayloadPreview();
+}
+
+function formatPercent(value) {
+  if (typeof value !== "number" || Number.isNaN(value)) return "--";
+  return `${(value * 100).toFixed(1)}%`;
+}
+
+function toTitleLabel(value) {
+  if (!value) return "--";
+  return value
+    .split(" ")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function setMeter(element, value) {
+  const percent = Math.max(0, Math.min(100, (value || 0) * 100));
+  element.style.width = `${percent}%`;
+}
+
+function setStatus(kind) {
+  statusDot.className = `status-dot ${kind}`;
+}
+
+function setEmptyResult() {
+  resultTitle.textContent = "Ready";
+  riskPercent.textContent = "--";
+  riskLabel.textContent = "Awaiting assessment";
+  clinicalValue.textContent = "--";
+  genomicValue.textContent = "--";
+  motherValue.textContent = "--";
+  modeValue.textContent = "--";
+  clinicalLabel.textContent = "--";
+  finalLabel.textContent = "--";
+  genomicMetric.hidden = true;
+  motherMetric.hidden = true;
+  setMeter(clinicalMeter, 0);
+  setMeter(genomicMeter, 0);
+  setMeter(motherMeter, 0);
+  setStatus("neutral");
+}
+
+function setLoadingResult() {
+  resultTitle.textContent = "Running";
+  riskPercent.textContent = "--";
+  riskLabel.textContent = "Calling model API";
+  setStatus("neutral pulse");
+}
+
+function setErrorResult(message) {
+  resultTitle.textContent = "Request Failed";
+  riskPercent.textContent = "Error";
+  riskLabel.textContent = message;
+  setStatus("danger");
+}
+
+function setResult(data) {
+  const finalProbability =
+    Object.hasOwn(data, "prob_mother") && typeof data.prob_mother === "number"
+      ? data.prob_mother
+      : data.prob_clinical;
+  const finalPrediction = data.prediction_final || data.prediction_clinical;
+  const isHigh = finalPrediction === "diabetes";
+
+  resultTitle.textContent = isHigh ? "Higher Risk" : "Lower Risk";
+  riskPercent.textContent = formatPercent(finalProbability);
+  riskLabel.textContent = toTitleLabel(finalPrediction);
+  setStatus(isHigh ? "danger" : "success");
+
+  clinicalValue.textContent = formatPercent(data.prob_clinical);
+  setMeter(clinicalMeter, data.prob_clinical);
+
+  const hasGenomic = Object.hasOwn(data, "prob_genomic") && typeof data.prob_genomic === "number";
+  genomicMetric.hidden = !hasGenomic;
+  motherMetric.hidden = !hasGenomic;
+
+  if (hasGenomic) {
+    genomicValue.textContent = formatPercent(data.prob_genomic);
+    motherValue.textContent = formatPercent(data.prob_mother);
+    setMeter(genomicMeter, data.prob_genomic);
+    setMeter(motherMeter, data.prob_mother);
+  } else {
+    genomicValue.textContent = "--";
+    motherValue.textContent = "--";
+    setMeter(genomicMeter, 0);
+    setMeter(motherMeter, 0);
+  }
+
+  modeValue.textContent = data.mode || "--";
+  clinicalLabel.textContent = toTitleLabel(data.prediction_clinical);
+  finalLabel.textContent = toTitleLabel(finalPrediction);
+}
+
+async function copyPayload() {
+  const text = payloadPreview.textContent;
+  if (navigator.clipboard) {
+    await navigator.clipboard.writeText(text);
+  } else {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand("copy");
+    textarea.remove();
+  }
+  copyJsonBtn.textContent = "Copied";
+  setTimeout(() => {
+    copyJsonBtn.textContent = "Copy JSON";
+  }, 1200);
+}
+
+async function submitPrediction(event) {
+  event.preventDefault();
+
+  let payload;
+  try {
+    payload = buildPayload();
+    payloadPreview.textContent = JSON.stringify(payload, null, 2);
+  } catch (error) {
+    setErrorResult(error.message);
     return;
   }
 
-  sendBtn.disabled = true;
-  setOutput("Sending request...");
+  submitBtn.disabled = true;
+  setLoadingResult();
 
   try {
-    const res = await fetch(API_URL, {
+    const response = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ input1: x, input2: y }),
+      body: JSON.stringify(payload),
     });
 
-    if (!res.ok) {
-      const text = await res.text();
-      setOutput(`HTTP ${res.status}: ${text}`, "error");
-      return;
+    if (!response.ok) {
+      const message = await response.text();
+      throw new Error(`HTTP ${response.status}: ${message}`);
     }
 
-    const data = await res.json();
-    const lines = [
-      `input1 : ${data.input1}`,
-      `input2 : ${data.input2}`,
-      `output : ${data.output}`,
-    ];
-    setOutput(lines.join("\n"), "success");
-  } catch (err) {
-    setOutput(`Network error: ${err.message}`, "error");
+    const data = await response.json();
+    setResult(data);
+  } catch (error) {
+    setErrorResult(error.message);
   } finally {
-    sendBtn.disabled = false;
+    submitBtn.disabled = false;
   }
+}
+
+apiPill.textContent = API_URL.replace(/^https?:\/\//, "");
+renderFields();
+setEmptyResult();
+loadClinicalData();
+loadGenomicData();
+
+includeGenomic.addEventListener("change", () => {
+  genomicPanel.hidden = !includeGenomic.checked;
+  updatePayloadPreview();
+});
+
+form.addEventListener("input", updatePayloadPreview);
+form.addEventListener("submit", submitPrediction);
+sampleBtn.addEventListener("click", loadSample);
+resetBtn.addEventListener("click", resetForm);
+copyJsonBtn.addEventListener("click", copyPayload);
+clinicalRowSelect.addEventListener("change", () => {
+  setClinicalRow(clinicalRows[Number(clinicalRowSelect.value)]);
+});
+genomicRowSelect.addEventListener("change", () => {
+  setGenomicRow(genomicRows[Number(genomicRowSelect.value)]);
+});
+
+document.querySelectorAll("[data-fill-genotype]").forEach((button) => {
+  button.addEventListener("click", () => {
+    setGenotypeValues(button.dataset.fillGenotype);
+  });
 });

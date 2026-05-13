@@ -1,143 +1,652 @@
 :root {
-  --bg: #f5f6f8;
-  --card: #ffffff;
-  --border: #e3e5ea;
-  --text: #1f2328;
-  --muted: #6a737d;
-  --accent: #2563eb;
-  --accent-hover: #1e4fc8;
-  --success: #16a34a;
-  --error: #dc2626;
-  --code-bg: #f1f3f5;
+  --bg: #eef2f1;
+  --surface: #ffffff;
+  --surface-strong: #f8faf9;
+  --text: #17211f;
+  --muted: #65736f;
+  --line: #dce4e1;
+  --line-strong: #c7d2cf;
+  --primary: #0f766e;
+  --primary-dark: #0b5f59;
+  --primary-soft: #dff3ef;
+  --blue: #2563eb;
+  --amber: #b7791f;
+  --danger: #c2410c;
+  --success: #15803d;
+  --shadow: 0 18px 48px rgba(31, 41, 55, 0.12);
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
-html, body {
-  margin: 0;
-  padding: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-size: 15px;
-  line-height: 1.5;
-  min-height: 100vh;
+html,
+body {
+  min-height: 100%;
 }
 
 body {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-
-.card {
-  width: 100%;
-  max-width: 420px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 28px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-}
-
-h1 {
-  margin: 0 0 4px;
-  font-size: 20px;
-  font-weight: 600;
-}
-
-h2 {
-  margin: 0 0 8px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.hint {
-  margin: 0 0 20px;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-code {
-  background: var(--code-bg);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-family: ui-monospace, Menlo, Consolas, monospace;
-  font-size: 12.5px;
-}
-
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-bottom: 20px;
-}
-
-label {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-label span {
-  font-size: 13px;
-  font-weight: 500;
+  margin: 0;
+  background:
+    linear-gradient(180deg, #f7faf8 0%, #eef2f1 44%, #e7eeeb 100%);
   color: var(--text);
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
 }
 
-input[type="number"] {
-  padding: 9px 12px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  font-size: 14px;
-  font-family: inherit;
-  background: #fff;
-  color: var(--text);
-  outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-
-input[type="number"]:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+button,
+input,
+select {
+  font: inherit;
 }
 
 button {
-  padding: 10px 16px;
-  background: var(--accent);
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.15s;
+  border: 0;
 }
 
-button:hover { background: var(--accent-hover); }
-button:disabled { opacity: 0.6; cursor: not-allowed; }
-
-.output {
-  border-top: 1px solid var(--border);
-  padding-top: 16px;
+.app-shell {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 28px 0;
 }
 
-#output {
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.topbar h1,
+.panel-head h2,
+.result-top h2 {
   margin: 0;
-  padding: 12px 14px;
-  background: var(--code-bg);
-  border-radius: 6px;
-  font-family: ui-monospace, Menlo, Consolas, monospace;
-  font-size: 13px;
-  white-space: pre-wrap;
-  word-break: break-word;
-  color: var(--text);
-  min-height: 48px;
+  letter-spacing: 0;
 }
 
-#output.success { color: var(--success); }
-#output.error   { color: var(--error); }
+.topbar h1 {
+  font-size: 42px;
+  line-height: 1.05;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: var(--primary-dark);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.api-pill {
+  flex: 0 0 auto;
+  max-width: 280px;
+  overflow: hidden;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--muted);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(340px, 0.75fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.form-panel,
+.result-card,
+.request-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: var(--shadow);
+}
+
+.form-panel {
+  padding: 22px;
+}
+
+.panel-head,
+.result-top,
+.request-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.panel-head {
+  margin-bottom: 16px;
+}
+
+.genomic-head {
+  margin-top: 26px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+
+.panel-head h2,
+.result-top h2 {
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.dataset-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 14px;
+  margin-bottom: 18px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-strong);
+}
+
+.genomic-dataset {
+  margin-bottom: 14px;
+  background: #fff;
+}
+
+.dataset-select {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.dataset-meta {
+  display: grid;
+  gap: 4px;
+  min-width: 170px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.dataset-meta strong {
+  color: var(--text);
+}
+
+.field,
+.gene-field {
+  min-width: 0;
+}
+
+.field {
+  display: grid;
+  gap: 7px;
+}
+
+.field-label,
+.gene-field span {
+  color: #30413d;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.input-wrap {
+  position: relative;
+  display: block;
+}
+
+input,
+select {
+  width: 100%;
+  min-width: 0;
+  height: 42px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--text);
+  outline: none;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    background 150ms ease;
+}
+
+input {
+  padding: 0 12px;
+}
+
+select {
+  padding: 0 34px 0 12px;
+}
+
+.input-wrap input {
+  padding-right: 78px;
+}
+
+input:focus,
+select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.16);
+}
+
+.suffix {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  color: var(--muted);
+  font-size: 12px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.toggle input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.toggle-track {
+  position: relative;
+  width: 42px;
+  height: 24px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: #e5ebe8;
+  transition: background 150ms ease;
+}
+
+.toggle-track::after {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22);
+  content: "";
+  transition: transform 150ms ease;
+}
+
+.toggle input:checked + .toggle-track {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.toggle input:checked + .toggle-track::after {
+  transform: translateX(18px);
+}
+
+.genomic-panel {
+  padding: 0;
+}
+
+.gene-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.gene-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  max-height: 360px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.gene-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 58px;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+}
+
+.gene-field span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gene-field input {
+  height: 32px;
+  padding: 0 8px;
+  text-align: center;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.primary-btn,
+.secondary-btn,
+.ghost-btn,
+.chip-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 750;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    transform 150ms ease;
+}
+
+.primary-btn {
+  padding: 0 18px;
+  background: var(--primary);
+  color: #fff;
+}
+
+.primary-btn:hover {
+  background: var(--primary-dark);
+}
+
+.primary-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.secondary-btn,
+.ghost-btn,
+.chip-btn {
+  border: 1px solid var(--line-strong);
+  background: #fff;
+  color: var(--text);
+}
+
+.secondary-btn,
+.ghost-btn {
+  padding: 0 14px;
+}
+
+.chip-btn {
+  min-height: 32px;
+  padding: 0 11px;
+  color: var(--primary-dark);
+  font-size: 13px;
+}
+
+.ghost-btn.compact {
+  min-height: 32px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+.secondary-btn:hover,
+.ghost-btn:hover,
+.chip-btn:hover {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.result-panel {
+  position: sticky;
+  top: 18px;
+  display: grid;
+  gap: 18px;
+}
+
+.result-card,
+.request-card {
+  padding: 20px;
+}
+
+.status-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--line-strong);
+}
+
+.status-dot.neutral {
+  background: var(--line-strong);
+}
+
+.status-dot.success {
+  background: var(--success);
+}
+
+.status-dot.danger {
+  background: var(--danger);
+}
+
+.status-dot.pulse {
+  animation: pulse 850ms infinite alternate;
+}
+
+.risk-score {
+  display: grid;
+  gap: 4px;
+  margin: 26px 0;
+}
+
+.risk-score span {
+  font-size: 68px;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 0.95;
+}
+
+.risk-score small {
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.metric-list {
+  display: grid;
+  gap: 16px;
+}
+
+.metric-row {
+  display: grid;
+  gap: 8px;
+}
+
+.metric-copy {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.metric-copy strong {
+  font-size: 13px;
+}
+
+.metric-copy span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.meter {
+  height: 9px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e7ece9;
+}
+
+.meter span {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--primary), var(--blue), var(--amber));
+  transition: width 240ms ease;
+}
+
+.summary-list {
+  display: grid;
+  gap: 12px;
+  margin: 24px 0 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.summary-list div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.summary-list dt {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.summary-list dd {
+  margin: 0;
+  max-width: 58%;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.request-card {
+  box-shadow: none;
+}
+
+#payload-preview {
+  max-height: 300px;
+  margin: 14px 0 0;
+  overflow: auto;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #101817;
+  color: #dcefed;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+@keyframes pulse {
+  from {
+    opacity: 0.35;
+    transform: scale(0.86);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 980px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .result-panel {
+    position: static;
+  }
+
+  .field-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dataset-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .gene-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .app-shell {
+    width: min(100% - 24px, 1180px);
+    padding: 18px 0;
+  }
+
+  .topbar,
+  .panel-head,
+  .actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .api-pill {
+    max-width: 100%;
+  }
+
+  .topbar h1 {
+    font-size: 32px;
+  }
+
+  .risk-score span {
+    font-size: 46px;
+  }
+
+  .form-panel,
+  .result-card,
+  .request-card {
+    padding: 16px;
+  }
+
+  .field-grid,
+  .gene-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .genomic-panel {
+    padding: 12px;
+  }
+
+  .primary-btn,
+  .secondary-btn,
+  .ghost-btn {
+    width: 100%;
+  }
+
+  .summary-list div {
+    display: grid;
+    gap: 2px;
+  }
+
+  .summary-list dd {
+    max-width: 100%;
+    text-align: left;
+  }
+}

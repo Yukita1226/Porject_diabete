@@ -30,7 +30,12 @@ func corsMiddleware() gin.HandlerFunc {
 }
 
 func main() {
-	pc, err := controller.NewPerceptronController("model/test(testingonly)/perceptron.onnx", libPath())
+	dc, err := controller.NewDiabetesController(
+		"model/onnx/clinical_model.onnx",
+		"model/onnx/genomic_model.onnx",
+		"model/onnx/preprocessing_config.json",
+		libPath(),
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -38,16 +43,6 @@ func main() {
 	r := gin.Default()
 	r.Use(corsMiddleware())
 
-	r.POST("/predict", pc.Predict)
+	r.POST("/predict", dc.Predict)
 	r.Run(":8080")
 }
-
-
-
-
-
-
-
-input1 = xxx
-input xxx
-output 1

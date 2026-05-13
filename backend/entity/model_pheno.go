@@ -1,15 +1,15 @@
 package entity
 
 type Phenotype_data struct {
-
-	Gender	  				string		`json:"gender"`
-	Age	      				int64		`json:"age"`
-	Hypertension    		bool		`json:"hypertension"`
-	Heart_disease    		bool		`json:"heart_disease"`
-	Smoking_history    		string		`json:"is_smokeing"`
-	Bmi			    		float32		`json:"bmi"`
-	HbA1c_level    			float32		`json:"hba1c"`
-	Blood_glucose_level    	int			`json:"blood_g_lv"`
-	Diabetes	   			bool		`json:"dia"`
-
+	Sex               int8    `json:"sex"`              
+	Age               float32 `json:"age"`
+	Race              int8    `json:"race"`           
+	Bmi               float32 `json:"bmi"`
+	Waist_cm          float32 `json:"waist_cm"`
+	Systolic_bp       float32 `json:"systolic_bp"`
+	Diastolic_bp      float32 `json:"diastolic_bp"`
+	Hba1c             float32 `json:"hba1c"`
+	Glucose_fasting   float32 `json:"glucose_fasting"`
+	Total_cholesterol float32 `json:"total_cholesterol"`
+	Hdl_cholesterol   float32 `json:"hdl_cholesterol"`
 }

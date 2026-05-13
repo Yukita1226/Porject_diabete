@@ -30,7 +30,7 @@ func corsMiddleware() gin.HandlerFunc {
 }
 
 func main() {
-	pc, err := controller.NewPerceptronController("model/perceptron.onnx", libPath())
+	pc, err := controller.NewPerceptronController("model/test(testingonly)/perceptron.onnx", libPath())
 	if err != nil {
 		log.Fatal(err)
 	}

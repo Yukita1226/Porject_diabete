@@ -3,144 +3,184 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Diabetes Risk Assessment</title>
+  <title>NexusMed | AI Diabetes Assessment</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <!-- Background Elements for Premium Feel -->
+  <div class="bg-shape bg-shape-1"></div>
+  <div class="bg-shape bg-shape-2"></div>
+
   <div class="app-shell">
     <header class="topbar">
-      <div>
-        <p class="eyebrow">Clinical + genomic model</p>
-        <h1>Diabetes Risk Assessment</h1>
+      <div class="header-title">
+        <div class="logo-box">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+        </div>
+        <div>
+          <p class="eyebrow ai-text">NexusMed Intelligence</p>
+          <h1>Diabetes Risk Assessment</h1>
+        </div>
       </div>
       <div class="api-pill" id="api-pill">localhost:8080</div>
     </header>
 
     <main class="workspace">
-      <section class="form-panel" aria-label="Assessment form">
+      <section class="form-panel glass-card" aria-label="Assessment form">
         <form id="prediction-form" autocomplete="off">
+          
+          <!-- STEP 1 -->
           <div class="panel-head">
-            <div>
-              <p class="eyebrow">Step 1</p>
-              <h2>Clinical Data</h2>
+            <div class="head-info">
+              <span class="step-badge">Step 1</span>
+              <h2>Clinical Baseline</h2>
             </div>
-            <button class="ghost-btn" type="button" id="sample-btn">Sample</button>
+            <button class="ghost-btn" type="button" id="sample-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+              Auto-fill Data
+            </button>
           </div>
 
           <div class="dataset-panel">
             <label class="dataset-select" for="clinical-row">
-              <span class="field-label">NHANES CSV Row</span>
-              <select id="clinical-row" disabled>
-                <option value="">Loading clinical data...</option>
-              </select>
+              <span class="field-label">NHANES Patient Record</span>
+              <div class="select-wrapper">
+                <select id="clinical-row" disabled>
+                  <option value="">Loading clinical engine...</option>
+                </select>
+              </div>
             </label>
             <div class="dataset-meta">
-              <span id="dataset-status">Loading dataset</span>
-              <strong id="dataset-label">Actual: --</strong>
+              <span id="dataset-status">Syncing...</span>
+              <strong id="dataset-label" class="badge">Actual: --</strong>
             </div>
           </div>
 
           <div class="field-grid" id="clinical-fields"></div>
 
+          <!-- STEP 2 -->
           <div class="panel-head genomic-head">
-            <div>
-              <p class="eyebrow">Step 2</p>
-              <h2>Genomic Data</h2>
+            <div class="head-info">
+              <span class="step-badge ai-badge">Step 2</span>
+              <h2>Genomic Profile</h2>
             </div>
-            <label class="toggle">
+            <label class="premium-toggle">
               <input type="checkbox" id="include-genomic" />
-              <span class="toggle-track" aria-hidden="true"></span>
-              <span>Include</span>
+              <span class="toggle-slider"></span>
+              <span class="toggle-label">Include Genomics</span>
             </label>
           </div>
 
           <div class="genomic-panel" id="genomic-panel" hidden>
             <div class="dataset-panel genomic-dataset">
               <label class="dataset-select" for="genomic-row">
-                <span class="field-label">Synthetic Genomic CSV Row</span>
-                <select id="genomic-row" disabled>
-                  <option value="">Loading genomic data...</option>
-                </select>
+                <span class="field-label">Synthesized DNA Sequence</span>
+                <div class="select-wrapper">
+                  <select id="genomic-row" disabled>
+                    <option value="">Loading genomic sequence...</option>
+                  </select>
+                </div>
               </label>
               <div class="dataset-meta">
-                <span id="genomic-dataset-status">Loading dataset</span>
-                <strong id="genomic-dataset-label">Actual: --</strong>
+                <span id="genomic-dataset-status">Syncing...</span>
+                <strong id="genomic-dataset-label" class="badge">Actual: --</strong>
               </div>
             </div>
+            
             <div class="gene-toolbar">
-              <button class="chip-btn" type="button" data-fill-genotype="0">All 0</button>
-              <button class="chip-btn" type="button" data-fill-genotype="1">All 1</button>
-              <button class="chip-btn" type="button" data-fill-genotype="2">All 2</button>
+              <span class="toolbar-label">Quick Genotype:</span>
+              <div class="chip-group">
+                <button class="chip-btn" type="button" data-fill-genotype="0">0 / 0</button>
+                <button class="chip-btn" type="button" data-fill-genotype="1">0 / 1</button>
+                <button class="chip-btn" type="button" data-fill-genotype="2">1 / 1</button>
+              </div>
             </div>
             <div class="gene-grid" id="genomic-fields"></div>
           </div>
 
           <div class="actions">
             <button class="secondary-btn" type="button" id="reset-btn">Reset</button>
-            <button class="primary-btn" type="submit" id="submit-btn">Run Assessment</button>
+            <button class="primary-btn ai-gradient-btn" type="submit" id="submit-btn">
+              Analyze Patient Risk
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </button>
           </div>
         </form>
       </section>
 
+      <!-- RESULTS -->
       <aside class="result-panel" aria-label="Assessment result">
-        <section class="result-card" aria-live="polite">
+        <section class="result-card glass-card" aria-live="polite">
           <div class="result-top">
             <div>
-              <p class="eyebrow">Result</p>
-              <h2 id="result-title">Ready</h2>
+              <p class="eyebrow">AI Prediction</p>
+              <h2 id="result-title">Awaiting Input</h2>
             </div>
-            <span class="status-dot neutral" id="status-dot"></span>
+            <span class="status-dot" id="status-dot"></span>
           </div>
 
-          <div class="risk-score">
-            <span id="risk-percent">--</span>
-            <small id="risk-label">Awaiting assessment</small>
+          <div class="risk-score-container">
+            <svg class="risk-ring" viewBox="0 0 100 100">
+              <circle class="ring-bg" cx="50" cy="50" r="45"></circle>
+              <circle class="ring-progress" cx="50" cy="50" r="45" id="svg-ring"></circle>
+            </svg>
+            <div class="risk-score-content">
+              <span id="risk-percent">--</span>
+              <small id="risk-label">Model Ready</small>
+            </div>
           </div>
 
           <div class="metric-list">
             <div class="metric-row">
               <div class="metric-copy">
-                <strong>Clinical</strong>
-                <span id="clinical-value">--</span>
+                <span>Clinical Model</span>
+                <strong id="clinical-value">--</strong>
               </div>
               <div class="meter"><span id="clinical-meter"></span></div>
             </div>
             <div class="metric-row" id="genomic-metric" hidden>
               <div class="metric-copy">
-                <strong>Genomic</strong>
-                <span id="genomic-value">--</span>
+                <span>Genomic Factor</span>
+                <strong id="genomic-value" class="text-blue">--</strong>
               </div>
-              <div class="meter"><span id="genomic-meter"></span></div>
+              <div class="meter"><span id="genomic-meter" class="bg-blue"></span></div>
             </div>
             <div class="metric-row" id="mother-metric" hidden>
               <div class="metric-copy">
-                <strong>Final</strong>
-                <span id="mother-value">--</span>
+                <span class="ai-text font-bold">Combined Model</span>
+                <strong id="mother-value" class="ai-text">--</strong>
               </div>
-              <div class="meter"><span id="mother-meter"></span></div>
+              <div class="meter"><span id="mother-meter" class="bg-gradient"></span></div>
             </div>
           </div>
 
+          <div class="divider"></div>
+
           <dl class="summary-list">
-            <div>
+            <div class="summary-item">
               <dt>Mode</dt>
               <dd id="mode-value">--</dd>
             </div>
-            <div>
-              <dt>Clinical label</dt>
+            <div class="summary-item">
+              <dt>Clinical Label</dt>
               <dd id="clinical-label">--</dd>
             </div>
-            <div>
-              <dt>Final label</dt>
+            <div class="summary-item">
+              <dt>Final Label</dt>
               <dd id="final-label">--</dd>
             </div>
           </dl>
         </section>
 
-        <section class="request-card">
+        <section class="request-card glass-card">
           <div class="request-head">
-            <p class="eyebrow">Request</p>
-            <button class="ghost-btn compact" type="button" id="copy-json-btn">Copy JSON</button>
+            <div class="code-header">
+              <div class="mac-dots"><span></span><span></span><span></span></div>
+              <p class="eyebrow" style="margin:0">Payload</p>
+            </div>
+            <button class="ghost-btn compact" type="button" id="copy-json-btn">Copy</button>
           </div>
           <pre id="payload-preview">{}</pre>
         </section>
@@ -149,5 +189,28 @@
   </div>
 
   <script src="script.js"></script>
+  
+  <!-- Add a tiny script to control the SVG ring based on result -->
+  <script>
+    // Intercept the setMeter function to also update the ring
+    const originalSetResult = window.setResult;
+    if(originalSetResult) {
+      window.setResult = function(data) {
+        originalSetResult(data);
+        const finalProbability = Object.hasOwn(data, "prob_mother") ? data.prob_mother : data.prob_clinical;
+        const circle = document.getElementById('svg-ring');
+        const circumference = 2 * Math.PI * 45;
+        const offset = circumference - (finalProbability * circumference);
+        circle.style.strokeDashoffset = offset;
+        
+        // Color logic
+        if(data.prediction_final === "diabetes" || data.prediction_clinical === "diabetes") {
+          circle.style.stroke = "var(--danger)";
+        } else {
+          circle.style.stroke = "var(--success)";
+        }
+      }
+    }
+  </script>
 </body>
 </html>

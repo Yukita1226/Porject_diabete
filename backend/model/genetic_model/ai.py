@@ -135,6 +135,7 @@ def accuracy(p: Parameter, indices: list, label: str = "") -> None:
     if (tp + fn) > 0: print(f"recall (sensitivity): {tp/(tp+fn):.4f}")
     print("=" * 50 + "\n")
 
+
 def prepare(name: str) -> Parameter:
 
     d = pd.read_csv(name, header=None)

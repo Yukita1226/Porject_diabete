@@ -89,8 +89,6 @@ const includeGenomic = document.getElementById("include-genomic");
 const submitBtn = document.getElementById("submit-btn");
 const sampleBtn = document.getElementById("sample-btn");
 const resetBtn = document.getElementById("reset-btn");
-const copyJsonBtn = document.getElementById("copy-json-btn");
-const payloadPreview = document.getElementById("payload-preview");
 const apiPill = document.getElementById("api-pill");
 const clinicalRowSelect = document.getElementById("clinical-row");
 const datasetStatus = document.getElementById("dataset-status");
@@ -243,7 +241,6 @@ function setClinicalRow(row) {
 
   datasetLabel.textContent = getActualLabel(row);
   setEmptyResult();
-  updatePayloadPreview();
 }
 
 function setGenomicRow(row) {
@@ -262,7 +259,6 @@ function setGenomicRow(row) {
       : ` | PRS ${Number(row.prs_normalized).toFixed(3)}`;
   genomicDatasetLabel.textContent = `${getGenomicActualLabel(row)}${prsText}`;
   setEmptyResult();
-  updatePayloadPreview();
 }
 
 function renderClinicalRows(rows) {
@@ -383,14 +379,6 @@ function buildPayload() {
   return payload;
 }
 
-function updatePayloadPreview() {
-  try {
-    payloadPreview.textContent = JSON.stringify(buildPayload(), null, 2);
-  } catch (error) {
-    payloadPreview.textContent = JSON.stringify({ error: error.message }, null, 2);
-  }
-}
-
 function loadSample() {
   clinicalRowSelect.value = "";
   datasetLabel.textContent = "Actual: --";
@@ -407,7 +395,6 @@ function loadSample() {
     if (element) element.value = index % 5 === 0 ? 1 : 0;
   });
 
-  updatePayloadPreview();
 }
 
 function resetForm() {
@@ -429,7 +416,6 @@ function resetForm() {
   includeGenomic.checked = false;
   genomicPanel.hidden = true;
   setEmptyResult();
-  updatePayloadPreview();
 }
 
 function setGenotypeValues(value) {
@@ -439,7 +425,6 @@ function setGenotypeValues(value) {
   genomicFields.forEach((name) => {
     form.elements[name].value = String(value);
   });
-  updatePayloadPreview();
 }
 
 function formatPercent(value) {
@@ -533,33 +518,12 @@ function setResult(data) {
   finalLabel.textContent = toTitleLabel(finalPrediction);
 }
 
-async function copyPayload() {
-  const text = payloadPreview.textContent;
-  if (navigator.clipboard) {
-    await navigator.clipboard.writeText(text);
-  } else {
-    const textarea = document.createElement("textarea");
-    textarea.value = text;
-    textarea.style.position = "fixed";
-    textarea.style.opacity = "0";
-    document.body.appendChild(textarea);
-    textarea.select();
-    document.execCommand("copy");
-    textarea.remove();
-  }
-  copyJsonBtn.textContent = "Copied";
-  setTimeout(() => {
-    copyJsonBtn.textContent = "Copy JSON";
-  }, 1200);
-}
-
 async function submitPrediction(event) {
   event.preventDefault();
 
   let payload;
   try {
     payload = buildPayload();
-    payloadPreview.textContent = JSON.stringify(payload, null, 2);
   } catch (error) {
     setErrorResult(error.message);
     return;
@@ -597,14 +561,11 @@ loadGenomicData();
 
 includeGenomic.addEventListener("change", () => {
   genomicPanel.hidden = !includeGenomic.checked;
-  updatePayloadPreview();
 });
 
-form.addEventListener("input", updatePayloadPreview);
 form.addEventListener("submit", submitPrediction);
 sampleBtn.addEventListener("click", loadSample);
 resetBtn.addEventListener("click", resetForm);
-copyJsonBtn.addEventListener("click", copyPayload);
 clinicalRowSelect.addEventListener("change", () => {
   setClinicalRow(clinicalRows[Number(clinicalRowSelect.value)]);
 });

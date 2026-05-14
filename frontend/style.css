@@ -379,29 +379,6 @@ input:focus, select:focus {
 .summary-item dt { color: var(--text-muted); font-size: 13px; }
 .summary-item dd { margin: 0; font-weight: 700; font-size: 14px; color: var(--text-main); }
 
-/* JSON Request Block */
-.request-card { padding: 0; overflow: hidden; }
-.request-head {
-  padding: 16px 24px; background: #1e293b;
-  display: flex; justify-content: space-between; align-items: center;
-}
-.code-header { display: flex; align-items: center; gap: 16px; }
-.mac-dots { display: flex; gap: 6px; }
-.mac-dots span { width: 10px; height: 10px; border-radius: 50%; background: #475569; }
-.mac-dots span:nth-child(1) { background: #ff5f56; }
-.mac-dots span:nth-child(2) { background: #ffbd2e; }
-.mac-dots span:nth-child(3) { background: #27c93f; }
-
-.request-head .eyebrow { color: #94a3b8; letter-spacing: 0.05em; }
-.request-head .ghost-btn { color: #cbd5e1; }
-.request-head .ghost-btn:hover { background: rgba(255,255,255,0.1); color: white; }
-
-#payload-preview {
-  margin: 0; padding: 24px; max-height: 250px; overflow: auto;
-  background: #0f172a; color: #38bdf8;
-  font-family: "JetBrains Mono", "Fira Code", monospace; font-size: 12px; line-height: 1.6;
-}
-
 [hidden] { display: none !important; }
 
 /* Responsive */

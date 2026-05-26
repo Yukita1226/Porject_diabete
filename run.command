@@ -66,6 +66,10 @@ APPLE
 }
 
 close_terminals() {
+  # kill helper script processes ก่อน → Terminal ไม่มี running process → ปิดโดยไม่ถาม
+  pkill -f "nexusmed_backend.sh"  2>/dev/null || true
+  pkill -f "nexusmed_frontend.sh" 2>/dev/null || true
+  sleep 0.4
   osascript 2>/dev/null << 'APPLE'
 tell application "Terminal"
   set allWins to (every window whose name contains "NexusMed")
@@ -80,7 +84,7 @@ APPLE
 
 kill_server() {
   lsof -ti ":$PORT" | xargs kill -9 2>/dev/null || true
-  sleep 0.5
+  sleep 0.4
 }
 
 is_running() {
@@ -142,7 +146,7 @@ stop() {
 
 # ── Entry ─────────────────────────────────────────────────
 
-trap 'stop' INT TERM
+trap '' INT TERM  # ปิด control panel โดยไม่ stop server อัตโนมัติ
 
 banner
 printf "  ${Y}Starting NexusMed...${N}\n\n"

@@ -242,9 +242,16 @@ function pickTrainingSamples(rows) {
   const noDiabetesRows = [];
 
   rows.forEach((row) => {
-    if (Number(row.diabetes) === 1 && diabetesRows.length < 5) {
+    const hba1c = Number(row.hba1c);
+    const bmi   = Number(row.bmi);
+    const waist = Number(row.waist_cm);
+
+    const borderlineDiabetes   = hba1c >= 6.5 && hba1c <= 7.5 && bmi >= 25 && bmi <= 35 && waist >= 90 && waist <= 120;
+    const borderlineNoDiabetes = hba1c >= 5.5 && hba1c <= 6.4 && bmi >= 24 && bmi <= 32;
+
+    if (Number(row.diabetes) === 1 && borderlineDiabetes && diabetesRows.length < 5) {
       diabetesRows.push(row);
-    } else if (Number(row.diabetes) === 0 && noDiabetesRows.length < 5) {
+    } else if (Number(row.diabetes) === 0 && borderlineNoDiabetes && noDiabetesRows.length < 5) {
       noDiabetesRows.push(row);
     }
   });

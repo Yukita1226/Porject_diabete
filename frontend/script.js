@@ -300,7 +300,7 @@ function renderClinicalRows(rows) {
   rows.forEach((row, index) => {
     const option = document.createElement("option");
     option.value = String(index);
-    option.textContent = `#${formatParticipantId(row.participant_id)} | train | age ${Number(row.age)} | ${getActualLabel(row).replace("Actual: ", "")}`;
+    option.textContent = `Patient ${formatParticipantId(row.participant_id)} | age ${Number(row.age)} | ${getActualLabel(row).replace("Actual: ", "")}`;
     clinicalRowSelect.appendChild(option);
   });
 

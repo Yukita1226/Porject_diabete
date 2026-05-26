@@ -76,7 +76,6 @@ func (c *Phenotype_data) ToRawSlice() []float32 {
 		c.Systolic_bp,
 		c.Diastolic_bp,
 		c.Hba1c,
-		c.Glucose_fasting,
 		c.Total_cholesterol,
 		c.Hdl_cholesterol,
 	}

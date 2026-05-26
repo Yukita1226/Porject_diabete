@@ -1,6 +1,6 @@
 const DEFAULT_API_URL = "http://localhost:8080/predict";
-const DEFAULT_CLINICAL_DATA_URL = "/clinical-data.csv";
-const DEFAULT_GENOMIC_DATA_URL = "/genomic-data.csv";
+const DEFAULT_CLINICAL_DATA_URL = "/clinical-data.csv?v=12";
+const DEFAULT_GENOMIC_DATA_URL = "/genomic-data.csv?v=12";
 const GENOMIC_ROW_LIMIT = 1000;
 const queryApi = new URLSearchParams(window.location.search).get("api");
 const API_URL = queryApi || DEFAULT_API_URL;
@@ -31,14 +31,13 @@ const clinicalFields = [
     ],
     sample: 3,
   },
-  { name: "bmi", label: "BMI", min: 10, max: 80, step: 0.1, sample: 31.4 },
-  { name: "waist_cm", label: "Waist", suffix: "cm", min: 30, max: 220, step: 0.1, sample: 104 },
-  { name: "systolic_bp", label: "Systolic BP", suffix: "mmHg", min: 60, max: 260, sample: 136 },
-  { name: "diastolic_bp", label: "Diastolic BP", suffix: "mmHg", min: 30, max: 160, sample: 84 },
-  { name: "hba1c", label: "HbA1c", suffix: "%", min: 3, max: 18, step: 0.1, sample: 6.4 },
-  { name: "glucose_fasting", label: "Fasting Glucose", suffix: "mg/dL", min: 40, max: 400, sample: 128 },
-  { name: "total_cholesterol", label: "Total Cholesterol", suffix: "mg/dL", min: 60, max: 450, sample: 206 },
-  { name: "hdl_cholesterol", label: "HDL Cholesterol", suffix: "mg/dL", min: 10, max: 180, sample: 46 },
+  { name: "bmi", label: "BMI", min: 10, max: 80, decimalPlaces: 1, sample: 31.4 },
+  { name: "waist_cm", label: "Waist", suffix: "cm", min: 30, max: 220, decimalPlaces: 1, sample: 104 },
+  { name: "systolic_bp", label: "Systolic BP", suffix: "mmHg", min: 60, max: 260, decimalPlaces: 1, sample: 136 },
+  { name: "diastolic_bp", label: "Diastolic BP", suffix: "mmHg", min: 30, max: 160, decimalPlaces: 1, sample: 84 },
+  { name: "hba1c", label: "HbA1c", suffix: "%", min: 3, max: 18, decimalPlaces: 1, sample: 6.4 },
+  { name: "total_cholesterol", label: "Total Cholesterol", suffix: "mg/dL", min: 60, max: 450, decimalPlaces: 1, sample: 206 },
+  { name: "hdl_cholesterol", label: "HDL Cholesterol", suffix: "mg/dL", min: 10, max: 180, decimalPlaces: 1, sample: 46 },
 ];
 
 const genomicFields = [
@@ -154,7 +153,7 @@ function createField(field) {
   input.id = field.name;
   input.name = field.name;
   input.type = "number";
-  input.step = field.step || "any";
+  input.step = field.step || (field.decimalPlaces === 1 ? "0.1" : "any");
   input.required = true;
   if (field.min !== undefined) input.min = field.min;
   if (field.max !== undefined) input.max = field.max;
@@ -221,7 +220,36 @@ function parseCsv(text, limit = Infinity) {
 
 function getActualLabel(row) {
   if (!row || row.diabetes === undefined) return "Actual: --";
-  return row.diabetes === "1" ? "Actual: Diabetes" : "Actual: No diabetes";
+  return Number(row.diabetes) === 1 ? "Actual: Diabetes" : "Actual: No diabetes";
+}
+
+function formatClinicalFieldValue(field, value) {
+  if (field.kind === "select") return String(Number(value));
+
+  const number = Number(value);
+  if (!Number.isFinite(number)) return value;
+  if (field.decimalPlaces !== undefined) return number.toFixed(field.decimalPlaces);
+  return String(number);
+}
+
+function formatParticipantId(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? String(Math.trunc(number)) : value;
+}
+
+function pickTrainingSamples(rows) {
+  const diabetesRows = [];
+  const noDiabetesRows = [];
+
+  rows.forEach((row) => {
+    if (Number(row.diabetes) === 1 && diabetesRows.length < 5) {
+      diabetesRows.push(row);
+    } else if (Number(row.diabetes) === 0 && noDiabetesRows.length < 5) {
+      noDiabetesRows.push(row);
+    }
+  });
+
+  return [...diabetesRows, ...noDiabetesRows];
 }
 
 function getGenomicActualLabel(row) {
@@ -235,7 +263,7 @@ function setClinicalRow(row) {
   clinicalFields.forEach((field) => {
     const element = form.elements[field.name];
     if (element && row[field.name] !== undefined) {
-      element.value = Number(row[field.name]);
+      element.value = formatClinicalFieldValue(field, row[field.name]);
     }
   });
 
@@ -264,16 +292,16 @@ function setGenomicRow(row) {
 function renderClinicalRows(rows) {
   clinicalRowSelect.replaceChildren();
 
-  rows.slice(0, 500).forEach((row, index) => {
+  rows.forEach((row, index) => {
     const option = document.createElement("option");
     option.value = String(index);
-    option.textContent = `#${row.participant_id} | age ${Number(row.age)} | ${getActualLabel(row).replace("Actual: ", "")}`;
+    option.textContent = `#${formatParticipantId(row.participant_id)} | train | age ${Number(row.age)} | ${getActualLabel(row).replace("Actual: ", "")}`;
     clinicalRowSelect.appendChild(option);
   });
 
   clinicalRowSelect.disabled = rows.length === 0;
   datasetStatus.textContent = rows.length
-    ? `${rows.length.toLocaleString()} rows loaded`
+    ? `${rows.length.toLocaleString()} training samples loaded (5 diabetes, 5 no diabetes)`
     : "No rows found";
 
   if (rows.length) {
@@ -307,12 +335,12 @@ function renderGenomicRows(rows, totalRows) {
 
 async function loadClinicalData() {
   try {
-    const response = await fetch(DEFAULT_CLINICAL_DATA_URL);
+    const response = await fetch(DEFAULT_CLINICAL_DATA_URL, { cache: "no-store" });
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
 
-    clinicalRows = parseCsv(await response.text()).rows;
+    clinicalRows = pickTrainingSamples(parseCsv(await response.text()).rows);
     renderClinicalRows(clinicalRows);
   } catch (error) {
     clinicalRowSelect.replaceChildren(new Option("CSV unavailable", ""));
@@ -324,7 +352,7 @@ async function loadClinicalData() {
 
 async function loadGenomicData() {
   try {
-    const response = await fetch(DEFAULT_GENOMIC_DATA_URL);
+    const response = await fetch(DEFAULT_GENOMIC_DATA_URL, { cache: "no-store" });
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
@@ -363,7 +391,8 @@ function readInteger(name) {
 function buildPayload() {
   const clinical = {};
   clinicalFields.forEach((field) => {
-    clinical[field.name] = readNumber(field.name);
+    clinical[field.name] =
+      field.valueType === "string" ? form.elements[field.name].value : readNumber(field.name);
   });
 
   const payload = { clinical };
@@ -387,7 +416,7 @@ function loadSample() {
 
   clinicalFields.forEach((field) => {
     const element = form.elements[field.name];
-    if (element) element.value = field.sample;
+    if (element) element.value = formatClinicalFieldValue(field, field.sample);
   });
 
   genomicFields.forEach((name, index) => {

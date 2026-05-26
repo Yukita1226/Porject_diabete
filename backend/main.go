@@ -82,9 +82,11 @@ func main() {
 		c.File(frontendFile("script.js"))
 	})
 	r.GET("/clinical-data.csv", func(c *gin.Context) {
+		c.Header("Cache-Control", "no-store")
 		c.File(clinicalDataFile())
 	})
 	r.GET("/genomic-data.csv", func(c *gin.Context) {
+		c.Header("Cache-Control", "no-store")
 		c.File(genomicDataFile())
 	})
 	r.POST("/predict", dc.Predict)

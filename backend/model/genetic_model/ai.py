@@ -97,11 +97,11 @@ def accuracy(p: Parameter, indices: list, label: str = "") -> None:
             p.genotype_NYNRIN[y], p.genotype_APOE[y], p.genotype_ANGPTL4[y], p.genotype_KIAA1755[y],
             p.genotype_KCNJ11[y], p.genotype_PNPLA3[y], p.genotype_SLC16A11[y], p.genotype_SPRED2[y],
             p.genotype_BDNF[y], p.genotype_CPNE4[y], p.genotype_MAFA[y], p.genotype_CHRDL1[y],
-            p.genotype_TSHZ3[y], p.prs_score[y], p.prs_normalized[y]
+            p.genotype_TSHZ3[y]
         ]
 
         z = 0
-        for i in range(39):
+        for i in range(37):
             z += xs[i] * p.weight[i]
         z += p.bia
         y_hat = sigmoid(z)
@@ -183,7 +183,7 @@ def prepare(name: str) -> Parameter:
     tem = d.iloc[1:, 38].values.tolist();  [p.prs_normalized.append(float(x))  for x in tem]; tem.clear()
     tem = d.iloc[1:, 39].values.tolist();  [p.genomic_risk.append(int(x))      for x in tem]; tem.clear()
 
-    p.weight = [0.01] * 39
+    p.weight = [0.01] * 37
     p.lr     = 0.001
     p.bia    = 0
 
@@ -233,13 +233,11 @@ def train(p: Parameter, epoch: int) -> None:
                 p.genotype_CPNE4[y],
                 p.genotype_MAFA[y],
                 p.genotype_CHRDL1[y],
-                p.genotype_TSHZ3[y],
-                p.prs_score[y],
-                p.prs_normalized[y]
+                p.genotype_TSHZ3[y]
             ]
 
             z = 0
-            for i in range(39):
+            for i in range(37):
                 z += x[i] * p.weight[i]
             z += p.bia
             y_hat = sigmoid(z)
@@ -247,7 +245,7 @@ def train(p: Parameter, epoch: int) -> None:
             error = p.genomic_risk[y] - y_hat
             total_loss += 0.5 * error * error
 
-            for i in range(39):
+            for i in range(37):
                 p.weight[i] += p.lr * error * x[i]
             p.bia += p.lr * error
 
@@ -300,10 +298,6 @@ def calculate(p: Parameter) -> None:
     genotype_CHRDL1    = int(input("genotype_CHRDL1    : "))
     genotype_TSHZ3     = int(input("genotype_TSHZ3     : "))
 
-    prs_score          = float(input("prs_score          : "))
-    prs_normalized     = float(input("prs_normalized     : "))
-
-    # pack inputs
     x = [
         genotype_SLC30A8, genotype_PAM, genotype_MC4R, genotype_WIPI1,
         genotype_SOCS2, genotype_HNF1A, genotype_GLP1R, genotype_DYNC2H1,
@@ -314,12 +308,11 @@ def calculate(p: Parameter) -> None:
         genotype_NYNRIN, genotype_APOE, genotype_ANGPTL4, genotype_KIAA1755,
         genotype_KCNJ11, genotype_PNPLA3, genotype_SLC16A11, genotype_SPRED2,
         genotype_BDNF, genotype_CPNE4, genotype_MAFA, genotype_CHRDL1,
-        genotype_TSHZ3, prs_score, prs_normalized
+        genotype_TSHZ3
     ]
 
-    # forward pass
     z = 0
-    for i in range(39):
+    for i in range(37):
         z += x[i] * p.weight[i]
     z += p.bia
     y_hat = sigmoid(z)

@@ -12,10 +12,14 @@ import (
 )
 
 func libPath() string {
-	if runtime.GOOS == "windows" {
+	switch runtime.GOOS {
+	case "windows":
 		return "lib/onnxruntime.dll"
+	case "darwin":
+		return "lib/libonnxruntime.dylib"
+	default:
+		return "lib/libonnxruntime.so"
 	}
-	return "lib/libonnxruntime.so"
 }
 
 func corsMiddleware() gin.HandlerFunc {

@@ -15,7 +15,6 @@ class Parameter:
         self.systolic_bp        = []
         self.diastolic_bp       = []
         self.hba1c              = []
-        self.glucose_fasting    = []
         self.total_cholesterol  = []
         self.hdl_cholesterol    = []
         self.diabetes           = []
@@ -38,21 +37,23 @@ def prepare(name: str) -> Parameter:
     p = Parameter()
 
 
-    tem = d.iloc[1:, 1].values.tolist();   [p.sex.append(float(x))               for x in tem]; tem.clear()
-    tem = d.iloc[1:, 2].values.tolist();   [p.age.append(float(x))               for x in tem]; tem.clear()
-    tem = d.iloc[1:, 3].values.tolist();   [p.race.append(float(x))              for x in tem]; tem.clear()
-    tem = d.iloc[1:, 4].values.tolist();   [p.bmi.append(float(x))               for x in tem]; tem.clear()
-    tem = d.iloc[1:, 5].values.tolist();   [p.waist_cm.append(float(x))          for x in tem]; tem.clear()
-    tem = d.iloc[1:, 6].values.tolist();   [p.systolic_bp.append(float(x))       for x in tem]; tem.clear()
-    tem = d.iloc[1:, 7].values.tolist();   [p.diastolic_bp.append(float(x))      for x in tem]; tem.clear()
-    tem = d.iloc[1:, 8].values.tolist();   [p.hba1c.append(float(x))             for x in tem]; tem.clear()
-    tem = d.iloc[1:, 9].values.tolist();   [p.glucose_fasting.append(float(x))   for x in tem]; tem.clear()
+    # CSV columns: participant_id(0), cycle(1), sex(2), age(3), race(4),
+    #              bmi(5), waist_cm(6), systolic_bp(7), diastolic_bp(8),
+    #              hba1c(9), total_cholesterol(10), hdl_cholesterol(11), diabetes(12)
+    tem = d.iloc[1:, 2].values.tolist();   [p.sex.append(float(x))               for x in tem]; tem.clear()
+    tem = d.iloc[1:, 3].values.tolist();   [p.age.append(float(x))               for x in tem]; tem.clear()
+    tem = d.iloc[1:, 4].values.tolist();   [p.race.append(float(x))              for x in tem]; tem.clear()
+    tem = d.iloc[1:, 5].values.tolist();   [p.bmi.append(float(x))               for x in tem]; tem.clear()
+    tem = d.iloc[1:, 6].values.tolist();   [p.waist_cm.append(float(x))          for x in tem]; tem.clear()
+    tem = d.iloc[1:, 7].values.tolist();   [p.systolic_bp.append(float(x))       for x in tem]; tem.clear()
+    tem = d.iloc[1:, 8].values.tolist();   [p.diastolic_bp.append(float(x))      for x in tem]; tem.clear()
+    tem = d.iloc[1:, 9].values.tolist();   [p.hba1c.append(float(x))             for x in tem]; tem.clear()
     tem = d.iloc[1:, 10].values.tolist();  [p.total_cholesterol.append(float(x)) for x in tem]; tem.clear()
     tem = d.iloc[1:, 11].values.tolist();  [p.hdl_cholesterol.append(float(x))   for x in tem]; tem.clear()
     tem = d.iloc[1:, 12].values.tolist();  [p.diabetes.append(int(float(x)))     for x in tem]; tem.clear()
 
-    p.weight = [0.01] * 11
-    p.lr     = 0.00001     # smaller because features have big ranges (glucose ~400, BP ~200)
+    p.weight = [0.01] * 10
+    p.lr     = 0.00001
     p.bia    = 0.0
 
     return p
@@ -73,7 +74,6 @@ def split_data(p: Parameter, test_ratio: float = 0.2):
 
 
 def _features(p: Parameter, y: int) -> list:
-    """pack the 11 input features for row y"""
     return [
         p.sex[y],
         p.age[y],
@@ -83,7 +83,6 @@ def _features(p: Parameter, y: int) -> list:
         p.systolic_bp[y],
         p.diastolic_bp[y],
         p.hba1c[y],
-        p.glucose_fasting[y],
         p.total_cholesterol[y],
         p.hdl_cholesterol[y]
     ]
@@ -98,7 +97,7 @@ def train(p: Parameter, epoch: int, train_idx: list) -> None:
             x = _features(p, y)
 
             z = 0
-            for i in range(11):
+            for i in range(10):
                 z += x[i] * p.weight[i]
             z += p.bia
             y_hat = sigmoid(z)
@@ -178,15 +177,14 @@ def calculate(p: Parameter) -> None:
     systolic_bp        = float(input("systolic_bp            : "))
     diastolic_bp       = float(input("diastolic_bp           : "))
     hba1c              = float(input("hba1c                  : "))
-    glucose_fasting    = float(input("glucose_fasting        : "))
     total_cholesterol  = float(input("total_cholesterol      : "))
     hdl_cholesterol    = float(input("hdl_cholesterol        : "))
 
     x = [sex, age, race, bmi, waist_cm, systolic_bp, diastolic_bp,
-         hba1c, glucose_fasting, total_cholesterol, hdl_cholesterol]
+         hba1c, total_cholesterol, hdl_cholesterol]
 
     z = 0
-    for i in range(11):
+    for i in range(10):
         z += x[i] * p.weight[i]
     z += p.bia
     y_hat = sigmoid(z)

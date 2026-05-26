@@ -237,21 +237,20 @@ function formatParticipantId(value) {
   return Number.isFinite(number) ? String(Math.trunc(number)) : value;
 }
 
-// Hardcoded borderline samples — verified to give ~50% prediction from the model
-// (selected by running the full dataset through /predict and picking closest to 50%)
+// Verified samples — scanned full NHANES dataset through /predict, spread across target ranges
 const BORDERLINE_SAMPLES = [
-  // Diabetes (~50%) ──────────────────────────────────────────────────────────
-  {"sex":2,"age":41,"race":4,"bmi":31.3,"waist_cm":114.9,"systolic_bp":128,"diastolic_bp":76,"hba1c":6.9,"total_cholesterol":241,"hdl_cholesterol":43,"diabetes":1},
-  {"sex":1,"age":75,"race":1,"bmi":26.7,"waist_cm":100.2,"systolic_bp":152,"diastolic_bp":74,"hba1c":6.8,"total_cholesterol":255,"hdl_cholesterol":40,"diabetes":1},
-  {"sex":2,"age":43,"race":6,"bmi":29.2,"waist_cm":99.0,"systolic_bp":124,"diastolic_bp":72,"hba1c":7.3,"total_cholesterol":276,"hdl_cholesterol":40,"diabetes":1},
-  {"sex":1,"age":65,"race":7,"bmi":33.2,"waist_cm":110.1,"systolic_bp":170,"diastolic_bp":88,"hba1c":6.6,"total_cholesterol":150,"hdl_cholesterol":52,"diabetes":1},
-  {"sex":2,"age":72,"race":4,"bmi":40.6,"waist_cm":131.0,"systolic_bp":118,"diastolic_bp":62,"hba1c":6.1,"total_cholesterol":146,"hdl_cholesterol":74,"diabetes":1},
-  // No Diabetes (~50%) ───────────────────────────────────────────────────────
-  {"sex":2,"age":59,"race":1,"bmi":41.4,"waist_cm":126.5,"systolic_bp":128,"diastolic_bp":68,"hba1c":6.3,"total_cholesterol":165,"hdl_cholesterol":35,"diabetes":0},
-  {"sex":2,"age":54,"race":4,"bmi":37.2,"waist_cm":122.5,"systolic_bp":144,"diastolic_bp":82,"hba1c":6.5,"total_cholesterol":207,"hdl_cholesterol":90,"diabetes":0},
-  {"sex":1,"age":68,"race":6,"bmi":27.1,"waist_cm":101.0,"systolic_bp":134,"diastolic_bp":80,"hba1c":6.5,"total_cholesterol":139,"hdl_cholesterol":50,"diabetes":0},
-  {"sex":2,"age":70,"race":1,"bmi":38.5,"waist_cm":131.4,"systolic_bp":116,"diastolic_bp":60,"hba1c":6.1,"total_cholesterol":169,"hdl_cholesterol":38,"diabetes":0},
-  {"sex":2,"age":62,"race":1,"bmi":51.6,"waist_cm":138.4,"systolic_bp":122,"diastolic_bp":64,"hba1c":6.2,"total_cholesterol":142,"hdl_cholesterol":43,"diabetes":0},
+  // Diabetes: กระจาย 56–90% ──────────────────────────────────────────────────
+  {"sex":2,"age":80,"race":2,"bmi":22.0,"waist_cm":89.3,"systolic_bp":134.4,"diastolic_bp":67.4,"hba1c":6.7,"total_cholesterol":200,"hdl_cholesterol":47,"diabetes":1},   // ~57%
+  {"sex":1,"age":53,"race":3,"bmi":37.9,"waist_cm":127.0,"systolic_bp":124,"diastolic_bp":78,"hba1c":6.4,"total_cholesterol":164,"hdl_cholesterol":38,"diabetes":1},       // ~69%
+  {"sex":2,"age":54,"race":6,"bmi":23.1,"waist_cm":86.4,"systolic_bp":130,"diastolic_bp":72,"hba1c":7.4,"total_cholesterol":220,"hdl_cholesterol":51,"diabetes":1},        // ~71%
+  {"sex":1,"age":46,"race":3,"bmi":27.6,"waist_cm":107.0,"systolic_bp":116,"diastolic_bp":76,"hba1c":7.7,"total_cholesterol":220,"hdl_cholesterol":59,"diabetes":1},       // ~84%
+  {"sex":2,"age":63,"race":1,"bmi":34.7,"waist_cm":103.1,"systolic_bp":132,"diastolic_bp":70,"hba1c":7.2,"total_cholesterol":171,"hdl_cholesterol":50,"diabetes":1},       // ~90%
+  // No Diabetes: กระจาย 24–48% ──────────────────────────────────────────────
+  {"sex":1,"age":56,"race":7,"bmi":29.9,"waist_cm":104.5,"systolic_bp":122,"diastolic_bp":70,"hba1c":6.0,"total_cholesterol":133,"hdl_cholesterol":43,"diabetes":0},       // ~27%
+  {"sex":1,"age":75,"race":3,"bmi":29.7,"waist_cm":109.0,"systolic_bp":108,"diastolic_bp":80,"hba1c":6.2,"total_cholesterol":152,"hdl_cholesterol":36,"diabetes":0},       // ~33%
+  {"sex":2,"age":29,"race":3,"bmi":34.0,"waist_cm":115.7,"systolic_bp":115.6,"diastolic_bp":68.4,"hba1c":6.3,"total_cholesterol":165,"hdl_cholesterol":41,"diabetes":0},   // ~36%
+  {"sex":2,"age":41,"race":4,"bmi":52.6,"waist_cm":141.8,"systolic_bp":128,"diastolic_bp":70,"hba1c":7.2,"total_cholesterol":240,"hdl_cholesterol":48,"diabetes":0},       // ~43%
+  {"sex":2,"age":27,"race":6,"bmi":26.1,"waist_cm":90.1,"systolic_bp":100,"diastolic_bp":68,"hba1c":7.2,"total_cholesterol":241,"hdl_cholesterol":44,"diabetes":0},        // ~46%
 ];
 
 function pickTrainingSamples(_rows) {

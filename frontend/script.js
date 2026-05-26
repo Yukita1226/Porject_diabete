@@ -237,26 +237,25 @@ function formatParticipantId(value) {
   return Number.isFinite(number) ? String(Math.trunc(number)) : value;
 }
 
-function pickTrainingSamples(rows) {
-  const diabetesRows = [];
-  const noDiabetesRows = [];
+// Hardcoded borderline samples — verified to give ~50% prediction from the model
+// (selected by running the full dataset through /predict and picking closest to 50%)
+const BORDERLINE_SAMPLES = [
+  // Diabetes (~50%) ──────────────────────────────────────────────────────────
+  {"sex":2,"age":41,"race":4,"bmi":31.3,"waist_cm":114.9,"systolic_bp":128,"diastolic_bp":76,"hba1c":6.9,"total_cholesterol":241,"hdl_cholesterol":43,"diabetes":1},
+  {"sex":1,"age":75,"race":1,"bmi":26.7,"waist_cm":100.2,"systolic_bp":152,"diastolic_bp":74,"hba1c":6.8,"total_cholesterol":255,"hdl_cholesterol":40,"diabetes":1},
+  {"sex":2,"age":43,"race":6,"bmi":29.2,"waist_cm":99.0,"systolic_bp":124,"diastolic_bp":72,"hba1c":7.3,"total_cholesterol":276,"hdl_cholesterol":40,"diabetes":1},
+  {"sex":1,"age":65,"race":7,"bmi":33.2,"waist_cm":110.1,"systolic_bp":170,"diastolic_bp":88,"hba1c":6.6,"total_cholesterol":150,"hdl_cholesterol":52,"diabetes":1},
+  {"sex":2,"age":72,"race":4,"bmi":40.6,"waist_cm":131.0,"systolic_bp":118,"diastolic_bp":62,"hba1c":6.1,"total_cholesterol":146,"hdl_cholesterol":74,"diabetes":1},
+  // No Diabetes (~50%) ───────────────────────────────────────────────────────
+  {"sex":2,"age":59,"race":1,"bmi":41.4,"waist_cm":126.5,"systolic_bp":128,"diastolic_bp":68,"hba1c":6.3,"total_cholesterol":165,"hdl_cholesterol":35,"diabetes":0},
+  {"sex":2,"age":54,"race":4,"bmi":37.2,"waist_cm":122.5,"systolic_bp":144,"diastolic_bp":82,"hba1c":6.5,"total_cholesterol":207,"hdl_cholesterol":90,"diabetes":0},
+  {"sex":1,"age":68,"race":6,"bmi":27.1,"waist_cm":101.0,"systolic_bp":134,"diastolic_bp":80,"hba1c":6.5,"total_cholesterol":139,"hdl_cholesterol":50,"diabetes":0},
+  {"sex":2,"age":70,"race":1,"bmi":38.5,"waist_cm":131.4,"systolic_bp":116,"diastolic_bp":60,"hba1c":6.1,"total_cholesterol":169,"hdl_cholesterol":38,"diabetes":0},
+  {"sex":2,"age":62,"race":1,"bmi":51.6,"waist_cm":138.4,"systolic_bp":122,"diastolic_bp":64,"hba1c":6.2,"total_cholesterol":142,"hdl_cholesterol":43,"diabetes":0},
+];
 
-  rows.forEach((row) => {
-    const hba1c = Number(row.hba1c);
-    const bmi   = Number(row.bmi);
-    const waist = Number(row.waist_cm);
-
-    const borderlineDiabetes   = hba1c >= 6.5 && hba1c <= 7.5 && bmi >= 25 && bmi <= 35 && waist >= 90 && waist <= 120;
-    const borderlineNoDiabetes = hba1c >= 5.5 && hba1c <= 6.4 && bmi >= 24 && bmi <= 32;
-
-    if (Number(row.diabetes) === 1 && borderlineDiabetes && diabetesRows.length < 5) {
-      diabetesRows.push(row);
-    } else if (Number(row.diabetes) === 0 && borderlineNoDiabetes && noDiabetesRows.length < 5) {
-      noDiabetesRows.push(row);
-    }
-  });
-
-  return [...diabetesRows, ...noDiabetesRows];
+function pickTrainingSamples(_rows) {
+  return BORDERLINE_SAMPLES;
 }
 
 function getGenomicActualLabel(row) {

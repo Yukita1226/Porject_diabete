@@ -89,6 +89,10 @@ func main() {
 		c.Header("Cache-Control", "no-store")
 		c.File(clinicalDataFile())
 	})
+	r.GET("/clinical-samples.csv", func(c *gin.Context) {
+		c.Header("Cache-Control", "no-store")
+		c.File(filepath.Join("model", "test(testingonly)", "clinical_samples.csv"))
+	})
 	r.GET("/genomic-data.csv", func(c *gin.Context) {
 		c.Header("Cache-Control", "no-store")
 		c.File(genomicDataFile())

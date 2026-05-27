@@ -1,5 +1,5 @@
 const DEFAULT_API_URL = "http://localhost:8080/predict";
-const DEFAULT_CLINICAL_DATA_URL = "/clinical-data.csv?v=12";
+const DEFAULT_CLINICAL_DATA_URL = "/clinical-samples.csv";
 const DEFAULT_GENOMIC_DATA_URL = "/genomic-data.csv?v=12";
 const GENOMIC_ROW_LIMIT = 1000;
 const queryApi = new URLSearchParams(window.location.search).get("api");

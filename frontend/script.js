@@ -237,24 +237,8 @@ function formatParticipantId(value) {
   return Number.isFinite(number) ? String(Math.trunc(number)) : value;
 }
 
-// Verified samples — scanned full NHANES dataset through /predict, spread across target ranges
-const BORDERLINE_SAMPLES = [
-  // Diabetes: กระจาย 56–90% ──────────────────────────────────────────────────
-  {"participant_id":1,"sex":2,"age":80,"race":2,"bmi":22.0,"waist_cm":89.3,"systolic_bp":134.4,"diastolic_bp":67.4,"hba1c":6.7,"total_cholesterol":200,"hdl_cholesterol":47,"diabetes":1},   // ~57%
-  {"participant_id":2,"sex":1,"age":53,"race":3,"bmi":37.9,"waist_cm":127.0,"systolic_bp":124,"diastolic_bp":78,"hba1c":6.4,"total_cholesterol":164,"hdl_cholesterol":38,"diabetes":1},       // ~69%
-  {"participant_id":3,"sex":2,"age":54,"race":6,"bmi":23.1,"waist_cm":86.4,"systolic_bp":130,"diastolic_bp":72,"hba1c":7.4,"total_cholesterol":220,"hdl_cholesterol":51,"diabetes":1},        // ~71%
-  {"participant_id":4,"sex":1,"age":46,"race":3,"bmi":27.6,"waist_cm":107.0,"systolic_bp":116,"diastolic_bp":76,"hba1c":7.7,"total_cholesterol":220,"hdl_cholesterol":59,"diabetes":1},       // ~84%
-  {"participant_id":5,"sex":2,"age":63,"race":1,"bmi":34.7,"waist_cm":103.1,"systolic_bp":132,"diastolic_bp":70,"hba1c":7.2,"total_cholesterol":171,"hdl_cholesterol":50,"diabetes":1},       // ~90%
-  // No Diabetes: กระจาย 24–48% ──────────────────────────────────────────────
-  {"participant_id":6,"sex":1,"age":56,"race":7,"bmi":29.9,"waist_cm":104.5,"systolic_bp":122,"diastolic_bp":70,"hba1c":6.0,"total_cholesterol":133,"hdl_cholesterol":43,"diabetes":0},       // ~27%
-  {"participant_id":7,"sex":1,"age":75,"race":3,"bmi":29.7,"waist_cm":109.0,"systolic_bp":108,"diastolic_bp":80,"hba1c":6.2,"total_cholesterol":152,"hdl_cholesterol":36,"diabetes":0},       // ~33%
-  {"participant_id":8,"sex":2,"age":29,"race":3,"bmi":34.0,"waist_cm":115.7,"systolic_bp":115.6,"diastolic_bp":68.4,"hba1c":6.3,"total_cholesterol":165,"hdl_cholesterol":41,"diabetes":0},   // ~36%
-  {"participant_id":9,"sex":2,"age":41,"race":4,"bmi":52.6,"waist_cm":141.8,"systolic_bp":128,"diastolic_bp":70,"hba1c":7.2,"total_cholesterol":240,"hdl_cholesterol":48,"diabetes":0},       // ~43%
-  {"participant_id":10,"sex":2,"age":27,"race":6,"bmi":26.1,"waist_cm":90.1,"systolic_bp":100,"diastolic_bp":68,"hba1c":7.2,"total_cholesterol":241,"hdl_cholesterol":44,"diabetes":0},       // ~46%
-];
-
-function pickTrainingSamples(_rows) {
-  return BORDERLINE_SAMPLES;
+function pickTrainingSamples(rows) {
+  return rows;
 }
 
 function getGenomicActualLabel(row) {

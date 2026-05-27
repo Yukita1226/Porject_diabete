@@ -111,6 +111,8 @@ const motherMeter = document.getElementById("mother-meter");
 const modeValue = document.getElementById("mode-value");
 const clinicalLabel = document.getElementById("clinical-label");
 const finalLabel = document.getElementById("final-label");
+const svgRing = document.getElementById("svg-ring");
+const SVG_CIRCUMFERENCE = 2 * Math.PI * 45;
 
 let clinicalRows = [];
 let genomicRows = [];
@@ -483,6 +485,8 @@ function setEmptyResult() {
   setMeter(genomicMeter, 0);
   setMeter(motherMeter, 0);
   setStatus("neutral");
+  svgRing.style.strokeDashoffset = SVG_CIRCUMFERENCE;
+  svgRing.style.stroke = "#cbd5e1";
 }
 
 function setLoadingResult() {
@@ -511,6 +515,8 @@ function setResult(data) {
   riskPercent.textContent = formatPercent(finalProbability);
   riskLabel.textContent = toTitleLabel(finalPrediction);
   setStatus(isHigh ? "danger" : "success");
+  svgRing.style.strokeDashoffset = SVG_CIRCUMFERENCE - (finalProbability * SVG_CIRCUMFERENCE);
+  svgRing.style.stroke = isHigh ? "var(--danger)" : "var(--success)";
 
   clinicalValue.textContent = formatPercent(data.prob_clinical);
   setMeter(clinicalMeter, data.prob_clinical);
@@ -590,6 +596,8 @@ clinicalRowSelect.addEventListener("change", () => {
 genomicRowSelect.addEventListener("change", () => {
   setGenomicRow(genomicRows[Number(genomicRowSelect.value)]);
 });
+
+clinicalRoot.addEventListener("input", setEmptyResult);
 
 document.querySelectorAll("[data-fill-genotype]").forEach((button) => {
   button.addEventListener("click", () => {

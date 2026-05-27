@@ -180,27 +180,5 @@
 
   <script src="script.js?v=12"></script>
   
-  <!-- Add a tiny script to control the SVG ring based on result -->
-  <script>
-    // Intercept the setMeter function to also update the ring
-    const originalSetResult = window.setResult;
-    if(originalSetResult) {
-      window.setResult = function(data) {
-        originalSetResult(data);
-        const finalProbability = Object.hasOwn(data, "prob_mother") ? data.prob_mother : data.prob_clinical;
-        const circle = document.getElementById('svg-ring');
-        const circumference = 2 * Math.PI * 45;
-        const offset = circumference - (finalProbability * circumference);
-        circle.style.strokeDashoffset = offset;
-        
-        // Color logic
-        if(data.prediction_final === "diabetes" || data.prediction_clinical === "diabetes") {
-          circle.style.stroke = "var(--danger)";
-        } else {
-          circle.style.stroke = "var(--success)";
-        }
-      }
-    }
-  </script>
 </body>
 </html>

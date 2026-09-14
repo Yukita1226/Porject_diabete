@@ -143,12 +143,16 @@ func PredictBoth(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	fused, err := bridge.call("predict_fusion", map[string]any{
+    "clinical": in.Clinical,
+    "genomic":  in.Genomic,
+})
 
 
 	c.JSON(http.StatusOK, gin.H{
 		"clinical_prob": cp,
 		"genomic_prob":  gp,
-		"fused_prob":    nil,
+		"fused_prob":    fused,
 	})
 }
 

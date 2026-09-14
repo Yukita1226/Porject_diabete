@@ -3,24 +3,14 @@ package main
 import (
 	"log"
 	"os"
+	"os/signal"
 	"path/filepath"
-	"runtime"
 	"strings"
+	"syscall"
 
 	"github.com/gin-gonic/gin"
 	"pk/backend/controller"
 )
-
-func libPath() string {
-	switch runtime.GOOS {
-	case "windows":
-		return "lib/onnxruntime.dll"
-	case "darwin":
-		return "lib/libonnxruntime.dylib"
-	default:
-		return "lib/libonnxruntime.so"
-	}
-}
 
 func corsMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -51,6 +41,10 @@ func frontendFile(name string) string {
 	return filepath.Join("..", "frontend", name)
 }
 
+func pythonDir() string {
+	return filepath.Join("..", "backend/python")
+}
+
 func clinicalDataFile() string {
 	return filepath.Join("model", "phenotype_model", "nhanes_diabetes.csv")
 }
@@ -60,15 +54,19 @@ func genomicDataFile() string {
 }
 
 func main() {
-	dc, err := controller.NewDiabetesController(
-		"model/onnx/clinical_model.onnx",
-		"model/onnx/genomic_model.onnx",
-		"model/onnx/preprocessing_config.json",
-		libPath(),
-	)
-	if err != nil {
+	if err := controller.Startbridge(pythonDir(), "main.py"); err != nil {
 		log.Fatal(err)
 	}
+	defer controller.Downbridge()
+
+
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-stop
+		controller.Downbridge()
+		os.Exit(0)
+	}()
 
 	r := gin.Default()
 	r.Use(corsMiddleware())
@@ -97,7 +95,12 @@ func main() {
 		c.Header("Cache-Control", "no-store")
 		c.File(genomicDataFile())
 	})
-	r.POST("/predict", dc.Predict)
+
+	r.POST("/predict", controller.PredictBoth)
+	r.POST("/predict/clinical", controller.PredictClinical)
+	r.POST("/predict/genomic", controller.PredictGenomic)
+	r.GET("/health", controller.Health)
+
 	addr := serverAddr()
 	log.Printf("API server listening on http://localhost%s", addr)
 	if err := r.Run(addr); err != nil {

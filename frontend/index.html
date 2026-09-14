@@ -1,184 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NexusMed | AI Diabetes Assessment</title>
-  <link rel="stylesheet" href="style.css?v=12" />
+<meta charset="utf-8">
+<title>Diabetes Risk - test</title>
+<link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <!-- Background Elements for Premium Feel -->
-  <div class="bg-shape bg-shape-1"></div>
-  <div class="bg-shape bg-shape-2"></div>
 
-  <div class="app-shell">
-    <header class="topbar">
-      <div class="header-title">
-        <div class="logo-box">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-          </svg>
-        </div>
-        <div>
-          <p class="eyebrow ai-text">NexusMed Intelligence</p>
-          <h1>Diabetes Risk Assessment</h1>
-        </div>
-      </div>
-      <div class="api-pill" id="api-pill">localhost:8080</div>
-    </header>
+<h1>Diabetes Risk - test page</h1>
+<p id="health">python: checking...</p>
 
-    <main class="workspace">
-      <section class="form-panel glass-card" aria-label="Assessment form">
-        <form id="prediction-form" autocomplete="off">
-          
-          <!-- STEP 1 -->
-          <div class="panel-head">
-            <div class="head-info">
-              <span class="step-badge">Step 1</span>
-              <h2>Clinical Baseline</h2>
-            </div>
-            <button class="ghost-btn" type="button" id="sample-btn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-              Auto-fill Data
-            </button>
-          </div>
+<fieldset>
+  <legend>Clinical</legend>
+  <label>age    <input id="age"  type="number" step="any" value="55"></label>
+  <label>bmi    <input id="bmi"  type="number" step="any" value="28.4"></label>
+  <label>tc     <input id="tc"   type="number" step="any" value="210"></label>
+  <label>tg     <input id="tg"   type="number" step="any" value="180"></label>
+  <label>hdl    <input id="hdl"  type="number" step="any" value="42"></label>
+  <label>ldl    <input id="ldl"  type="number" step="any" value="130"></label>
+</fieldset>
 
-          <div class="dataset-panel">
-            <label class="dataset-select" for="clinical-row">
-              <span class="field-label">NHANES Training Samples</span>
-              <div class="select-wrapper">
-                <select id="clinical-row" disabled>
-                  <option value="">Loading clinical engine...</option>
-                </select>
-              </div>
-            </label>
-            <div class="dataset-meta">
-              <span id="dataset-status">Syncing...</span>
-              <strong id="dataset-label" class="badge">Actual: --</strong>
-            </div>
-          </div>
+<fieldset>
+  <legend>Genomic (allele dosage 0 / 1 / 2)</legend>
+  <label>kcnj11  <input id="kcnj11"  type="number" min="0" max="2" step="1" value="1"></label>
+  <label>tcf7l2  <input id="tcf7l2"  type="number" min="0" max="2" step="1" value="2"></label>
+  <label>slc30a8 <input id="slc30a8" type="number" min="0" max="2" step="1" value="0"></label>
+  <label>igf2bp2 <input id="igf2bp2" type="number" min="0" max="2" step="1" value="1"></label>
+  <label>hhex    <input id="hhex"    type="number" min="0" max="2" step="1" value="0"></label>
+  <label>cdkn2a  <input id="cdkn2a"  type="number" min="0" max="2" step="1" value="1"></label>
+  <label>kcnq1   <input id="kcnq1"   type="number" min="0" max="2" step="1" value="2"></label>
+  <label>cdkal1  <input id="cdkal1"  type="number" min="0" max="2" step="1" value="0"></label>
+  <label>fto     <input id="fto"     type="number" min="0" max="2" step="1" value="1"></label>
+</fieldset>
 
-          <div class="field-grid" id="clinical-fields"></div>
+<p>
+  <button id="btn-both">POST /predict</button>
+  <button id="btn-clinical">POST /predict/clinical</button>
+  <button id="btn-genomic">POST /predict/genomic</button>
+</p>
 
-          <!-- STEP 2 -->
-          <div class="panel-head genomic-head">
-            <div class="head-info">
-              <span class="step-badge ai-badge">Step 2</span>
-              <h2>Genomic Profile</h2>
-            </div>
-            <label class="premium-toggle">
-              <input type="checkbox" id="include-genomic" />
-              <span class="toggle-slider"></span>
-              <span class="toggle-label">Include Genomics</span>
-            </label>
-          </div>
+<h3>sent</h3>
+<pre id="sent">-</pre>
 
-          <div class="genomic-panel" id="genomic-panel" hidden>
-            <div class="dataset-panel genomic-dataset">
-              <label class="dataset-select" for="genomic-row">
-                <span class="field-label">Synthesized DNA Sequence</span>
-                <div class="select-wrapper">
-                  <select id="genomic-row" disabled>
-                    <option value="">Loading genomic sequence...</option>
-                  </select>
-                </div>
-              </label>
-              <div class="dataset-meta">
-                <span id="genomic-dataset-status">Syncing...</span>
-                <strong id="genomic-dataset-label" class="badge">Actual: --</strong>
-              </div>
-            </div>
-            
-            <div class="gene-toolbar">
-              <span class="toolbar-label">Quick Genotype:</span>
-              <div class="chip-group">
-                <button class="chip-btn" type="button" data-fill-genotype="0">0 / 0</button>
-                <button class="chip-btn" type="button" data-fill-genotype="1">0 / 1</button>
-                <button class="chip-btn" type="button" data-fill-genotype="2">1 / 1</button>
-              </div>
-            </div>
-            <div class="gene-grid" id="genomic-fields"></div>
-          </div>
+<h3>received</h3>
+<pre id="got">-</pre>
 
-          <div class="actions">
-            <button class="secondary-btn" type="button" id="reset-btn">Reset</button>
-            <button class="primary-btn ai-gradient-btn" type="submit" id="submit-btn">
-              Analyze Patient Risk
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-            </button>
-          </div>
-        </form>
-      </section>
-
-      <!-- RESULTS -->
-      <aside class="result-panel" aria-label="Assessment result">
-        <section class="result-card glass-card" aria-live="polite">
-          <div class="result-top">
-            <div>
-              <p class="eyebrow">AI Prediction</p>
-              <h2 id="result-title">Awaiting Input</h2>
-            </div>
-            <span class="status-dot" id="status-dot"></span>
-          </div>
-
-          <div class="risk-score-container">
-            <svg class="risk-ring" viewBox="0 0 100 100">
-              <circle class="ring-bg" cx="50" cy="50" r="45"></circle>
-              <circle class="ring-progress" cx="50" cy="50" r="45" id="svg-ring"></circle>
-            </svg>
-            <div class="risk-score-content">
-              <span id="risk-percent">--</span>
-              <small id="risk-label">Model Ready</small>
-            </div>
-          </div>
-
-          <div class="metric-list">
-            <div class="metric-row">
-              <div class="metric-copy">
-                <span>Clinical Model</span>
-                <strong id="clinical-value">--</strong>
-              </div>
-              <div class="meter"><span id="clinical-meter"></span></div>
-            </div>
-            <div class="metric-row" id="genomic-metric" hidden>
-              <div class="metric-copy">
-                <span>Genomic Factor</span>
-                <strong id="genomic-value" class="text-blue">--</strong>
-              </div>
-              <div class="meter"><span id="genomic-meter" class="bg-blue"></span></div>
-            </div>
-            <div class="metric-row" id="mother-metric" hidden>
-              <div class="metric-copy">
-                <span class="ai-text font-bold">Combined Model</span>
-                <strong id="mother-value" class="ai-text">--</strong>
-              </div>
-              <div class="meter"><span id="mother-meter" class="bg-gradient"></span></div>
-            </div>
-          </div>
-
-          <div class="divider"></div>
-
-          <dl class="summary-list">
-            <div class="summary-item">
-              <dt>Mode</dt>
-              <dd id="mode-value">--</dd>
-            </div>
-            <div class="summary-item">
-              <dt>Clinical Label</dt>
-              <dd id="clinical-label">--</dd>
-            </div>
-            <div class="summary-item">
-              <dt>Final Label</dt>
-              <dd id="final-label">--</dd>
-            </div>
-          </dl>
-        </section>
-
-      </aside>
-    </main>
-  </div>
-
-  <script src="script.js?v=12"></script>
-  
+<script src="/script.js"></script>
 </body>
 </html>

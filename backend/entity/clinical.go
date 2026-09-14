@@ -1,7 +1,7 @@
 package entity
 
 type Clinical struct {
-	Age 	uint8 		`json:"age"`
+	Age 	float32 	`json:"age"`
 	BMI 	float32 	`json:"bmi"`
 	TC  	float32 	`json:"tc"`
 	TG  	float32 	`json:"tg"`

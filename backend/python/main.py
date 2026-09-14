@@ -13,7 +13,7 @@ def loadmodel() -> list[keras.Model]:
 
     return [model1,model2]
 
-def predict
+def predict(age = 0,bmi = 0,tc = 0,tg = 0,hdl = 0,ldl = 0)
 
 
 if __name__ == "__main__" :

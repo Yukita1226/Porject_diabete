@@ -2,48 +2,83 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Diabetes Risk - test</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 
-<h1>Diabetes Risk - test page</h1>
-<p id="health">python: checking...</p>
+<div class="page">
 
-<fieldset>
-  <legend>Clinical</legend>
-  <label>age    <input id="age"  type="number" step="any" value="55"></label>
-  <label>bmi    <input id="bmi"  type="number" step="any" value="28.4"></label>
-  <label>tc     <input id="tc"   type="number" step="any" value="210"></label>
-  <label>tg     <input id="tg"   type="number" step="any" value="180"></label>
-  <label>hdl    <input id="hdl"  type="number" step="any" value="42"></label>
-  <label>ldl    <input id="ldl"  type="number" step="any" value="130"></label>
-</fieldset>
+  <header class="hero">
+    <div class="hero-text">
+      <h1>Diabetes Risk Estimator</h1>
+      <p class="sub">Clinical + genomic fusion model — internal test console</p>
+    </div>
+    <div id="health" class="health-pill health-pending">
+      <span class="dot"></span><span class="health-label">checking…</span>
+    </div>
+  </header>
 
-<fieldset>
-  <legend>Genomic (allele dosage 0 / 1 / 2)</legend>
-  <label>kcnj11  <input id="kcnj11"  type="number" min="0" max="2" step="1" value="1"></label>
-  <label>tcf7l2  <input id="tcf7l2"  type="number" min="0" max="2" step="1" value="2"></label>
-  <label>slc30a8 <input id="slc30a8" type="number" min="0" max="2" step="1" value="0"></label>
-  <label>igf2bp2 <input id="igf2bp2" type="number" min="0" max="2" step="1" value="1"></label>
-  <label>hhex    <input id="hhex"    type="number" min="0" max="2" step="1" value="0"></label>
-  <label>cdkn2a  <input id="cdkn2a"  type="number" min="0" max="2" step="1" value="1"></label>
-  <label>kcnq1   <input id="kcnq1"   type="number" min="0" max="2" step="1" value="2"></label>
-  <label>cdkal1  <input id="cdkal1"  type="number" min="0" max="2" step="1" value="0"></label>
-  <label>fto     <input id="fto"     type="number" min="0" max="2" step="1" value="1"></label>
-</fieldset>
+  <main class="grid">
 
-<p>
-  <button id="btn-both">POST /predict</button>
-  <button id="btn-clinical">POST /predict/clinical</button>
-  <button id="btn-genomic">POST /predict/genomic</button>
-</p>
+    <section class="card">
+      <div class="card-head">
+        <h2>Clinical</h2>
+        <span class="badge">6 fields</span>
+      </div>
+      <div class="field-grid">
+        <label class="field"><span>Age</span><input id="age" type="number" step="any" value="55"><small>years</small></label>
+        <label class="field"><span>BMI</span><input id="bmi" type="number" step="any" value="28.4"><small>kg/m²</small></label>
+        <label class="field"><span>Total cholesterol</span><input id="tc" type="number" step="any" value="210"><small>mg/dL</small></label>
+        <label class="field"><span>Triglycerides</span><input id="tg" type="number" step="any" value="180"><small>mg/dL</small></label>
+        <label class="field"><span>HDL</span><input id="hdl" type="number" step="any" value="42"><small>mg/dL</small></label>
+        <label class="field"><span>LDL</span><input id="ldl" type="number" step="any" value="130"><small>mg/dL</small></label>
+      </div>
+    </section>
 
-<h3>sent</h3>
-<pre id="sent">-</pre>
+    <section class="card">
+      <div class="card-head">
+        <h2>Genomic</h2>
+        <span class="badge">allele dosage 0 / 1 / 2</span>
+      </div>
+      <div class="field-grid">
+        <label class="field"><span>KCNJ11</span><input id="kcnj11" type="number" min="0" max="2" step="1" value="1"></label>
+        <label class="field"><span>TCF7L2</span><input id="tcf7l2" type="number" min="0" max="2" step="1" value="2"></label>
+        <label class="field"><span>SLC30A8</span><input id="slc30a8" type="number" min="0" max="2" step="1" value="0"></label>
+        <label class="field"><span>IGF2BP2</span><input id="igf2bp2" type="number" min="0" max="2" step="1" value="1"></label>
+        <label class="field"><span>HHEX</span><input id="hhex" type="number" min="0" max="2" step="1" value="0"></label>
+        <label class="field"><span>CDKN2A</span><input id="cdkn2a" type="number" min="0" max="2" step="1" value="1"></label>
+        <label class="field"><span>KCNQ1</span><input id="kcnq1" type="number" min="0" max="2" step="1" value="2"></label>
+        <label class="field"><span>CDKAL1</span><input id="cdkal1" type="number" min="0" max="2" step="1" value="0"></label>
+        <label class="field"><span>FTO</span><input id="fto" type="number" min="0" max="2" step="1" value="1"></label>
+      </div>
+    </section>
 
-<h3>received</h3>
-<pre id="got">-</pre>
+  </main>
+
+  <div class="actions">
+    <button id="btn-both" class="btn btn-primary">Predict — both</button>
+    <button id="btn-clinical" class="btn">Clinical only</button>
+    <button id="btn-genomic" class="btn">Genomic only</button>
+  </div>
+
+  <div id="result-cards" class="result-cards" hidden></div>
+
+  <section class="io-grid">
+    <div class="io-block">
+      <h3>sent</h3>
+      <pre id="sent">-</pre>
+    </div>
+    <div class="io-block">
+      <h3>received</h3>
+      <pre id="got">-</pre>
+    </div>
+  </section>
+
+</div>
 
 <script src="/script.js"></script>
 </body>
